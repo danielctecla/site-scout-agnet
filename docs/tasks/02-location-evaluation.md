@@ -1,7 +1,7 @@
 # Tasks — Location Evaluation
 
 **Version:** 0.1
-**Status:** Waiting for decision approval (TASK-022)
+**Status:** In progress
 **Last updated:** 2026-11-08
 **Builds on:** the MVP in `01-mvp.md` (auth, onboarding, dashboard). Task IDs continue that file's numbering.
 
@@ -21,7 +21,7 @@ Development principles from `01-mvp.md` §1 still apply: one task at a time, TDD
   - `Estrato` is a text range ("0 a 5 personas" … "251 y más personas").
   - The API exposes no dataset edition or update date; the UI shows the query date and says the edition is not reported.
   - A free token is required.
-- **Documented rules this feature must change (need approval):** `architecture.md` §6/§11 say the app needs no secrets; DENUE and the AI provider need two server-only keys. The repository is public, so the secret scanner must learn the new key formats.
+- **Documented rules this feature must change (need approval):** `architecture.md` §6/§11 say the app needs no secrets; DENUE and the AI provider need a server-only DENUE token. The repository is public, so the secret scanner must learn the new key formats.
 
 ## 3. Tasks
 
@@ -29,7 +29,7 @@ Development principles from `01-mvp.md` §1 still apply: one task at a time, TDD
 
 #### TASK-022: Close blocking decisions
 
-**Status:** Proposed; waiting for approval.
+**Status:** Approved (2026-11-08). D6 changed to Claude Code; the rest as proposed.
 
 **Scope:** approve or change decisions D1–D8 below. Each one changes results or behavior.
 
@@ -73,11 +73,11 @@ Alternative: let the agent pick free coordinates plus supporting DENUE IDs. It n
 
 Score = round(100 × Σ weight × value ÷ Σ weight of available factors). A factor without data shows as "not available" and its weight is left out. Same data and parameters → same score. Rent is shown but never scored.
 
-**D6 — AI provider.** Claude API through `@anthropic-ai/sdk`, server only, model `claude-sonnet-5-5`. One structured-output call for the proposal; one call per chat message, with the stored evaluation as context. No agent framework.
+**D6 — AI provider (approved 2026-11-08: Claude Code, no API key).** `@anthropic-ai/claude-agent-sdk` runs Claude through the Claude Code login on the machine that runs `next dev`. Verified 2026-11-08: no API key used, structured output works, about 3 s per call. Server only, model `claude-sonnet-5-5`. The agent is isolated: no tools (`tools: []`), no settings, CLAUDE.md or MCP servers (`settingSources: []`, `strictMcpConfig`), an empty working directory and sessions not persisted. One structured-output call for the proposal; one call per chat message, with the stored evaluation as context. This works only because the app runs locally for its owner; it cannot serve other users with that login.
 
 **D7 — Storage.** New table `location_evaluations` (`user_id`, input, result as `jsonb`, `created_at`) with RLS limited to the owner. It gives detail and comparison pages a URL and lets the chat load trusted context from the database. No history screen. Chat messages are not stored.
 
-**D8 — Secrets.** `DENUE_TOKEN` and `ANTHROPIC_API_KEY` live in `.env.local`, server only, never `NEXT_PUBLIC_`. `.env.example` lists them without values; `check-secrets` blocks `sk-ant-` keys. Tests never call DENUE or the AI provider.
+**D8 — Secrets.** `DENUE_TOKEN` lives in `.env.local`, server only, never `NEXT_PUBLIC_`; `.env.example` lists it without a value. Claude needs no key in the project. Tests never call DENUE or Claude.
 
 **Known limitation to accept:** the zone scores are reproducible, but the agent may pick different zones if the same evaluation is run again. A stored evaluation always shows the same result.
 
@@ -86,6 +86,8 @@ Score = round(100 × Σ weight × value ÷ Σ weight of available factors). A fa
 ---
 
 #### TASK-023: Specify Location Evaluation
+
+**Status:** Done (2026-11-08). `requirements.md` FR-14–FR-19, NFR-08, AR-06–AR-08; `specification.md` §12; `architecture.md` §15; `database.md` §13.
 
 **Dependencies:** TASK-022.
 
@@ -141,7 +143,7 @@ Score = round(100 × Σ weight × value ÷ Σ weight of available factors). A fa
 
 **Dependencies:** TASK-026.
 
-**Scope:** system prompt, JSON schema, Claude call, validation and retry (D4 steps 3–6).
+**Scope:** system prompt, JSON schema, Agent SDK call (D6), validation and retry (D4 steps 3–6).
 
 **Tests (mocked model):** schema violation, unknown candidate ID, zone outside the radius, zones too close, unsupported number in the text, fewer than three valid zones.
 
@@ -195,7 +197,7 @@ Each UI task starts with a short design proposal for approval (UX direction).
 
 **Dependencies:** TASK-032, TASK-033, TASK-034.
 
-**Scope:** Playwright journey with DENUE, geocoding and the model mocked at the server boundary: form → results → detail → comparison → chat. Manual smoke test with real DENUE and Claude. README: new variables and how to run.
+**Scope:** Playwright journey with DENUE, geocoding and the model mocked at the server boundary: form → results → detail → comparison → chat. Manual smoke test with real DENUE and Claude Code. README: new variables and how to run.
 
 ## 4. Dependency summary
 

@@ -1,6 +1,6 @@
-# Architecture — Authentication & Business Onboarding
+# Architecture — Authentication, Business Onboarding & Location Evaluation
 
-**Version:** 0.6  
+**Version:** 0.7  
 **Status:** Updated  
 **Last updated:** 2026-11-08  
 **Project:** Business Management Application
@@ -333,7 +333,7 @@ Both use an empty `search_path`, fully qualified object names, explicit identity
 
 - The Supabase publishable key may be used in the frontend with RLS enabled.
 - Supabase service-role credentials must never be exposed to the browser or placed in `NEXT_PUBLIC_*` variables.
-- The application needs no secrets: it uses only the project URL and publishable key. Local environment variables and tooling credentials are handled as described in §11.
+- The application's only secret is the server-only `DENUE_TOKEN` (§15). Supabase access uses only the project URL and publishable key. Local environment variables and tooling credentials are handled as described in §11.
 
 ## 7. Route Protection
 
@@ -526,18 +526,19 @@ Supabase's built-in email service delivers only to addresses that are members of
 | File | Committed | Contents |
 |---|---|---|
 | `.env.example` | Yes | Variable names with placeholder values and comments; never real values |
-| `.env.local` | No (git-ignored) | Supabase project URL and publishable key, read by `next dev` and `next start` |
+| `.env.local` | No (git-ignored) | Supabase project URL and publishable key, and the server-only `DENUE_TOKEN`, read by `next dev` and `next start` |
 
 | Variable | Value | Exposure |
 |---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://<project-ref>.supabase.co` | Browser; safe |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | The project's publishable key | Browser; safe, because access is controlled by RLS and privileges |
+| `DENUE_TOKEN` | INEGI DENUE API token | Server only; read by `lib/location/denue.ts` |
 
 Rules:
 
 - Setup: copy `.env.example` to `.env.local` and fill in the values from the Supabase dashboard (project API settings).
-- The application needs no secrets. The service-role key, secret API keys, the database password and Supabase access tokens never go into any `.env` file read by Next.js.
-- Only browser-safe values use the `NEXT_PUBLIC_` prefix, and the application has no other variables.
+- The only secret is `DENUE_TOKEN`, read only by server code. The Supabase service-role key, secret API keys, the database password and Supabase access tokens never go into any `.env` file read by Next.js.
+- Only browser-safe values use the `NEXT_PUBLIC_` prefix.
 - `.gitignore` ignores `.env` and `.env.*` except `.env.example` (already in place).
 - `scripts/check-secrets.mjs` detects Supabase secret keys (`sb_secret_` prefix), personal access tokens, `service_role` JWTs and remote database URLs with a password. The pre-commit hook runs it on staged content and blocks the commit. CI runs it on every file in the repository and fails if one is found. The repository is public, so the hook is the main defense: CI only detects a secret after it has been pushed.
 - Automated tests never read `.env.local`. Test runners receive the local test stack's URL and key explicitly (from `supabase status -o env`), and a shared setup guard aborts any test whose Supabase URL is not `http://127.0.0.1` or `http://localhost`. This prevents tests from writing to the Supabase project.
@@ -565,8 +566,8 @@ Locally, `npm run check` runs the same checks as the checks job, and `npm run db
 ## 12. Architectural Constraints
 
 - No custom authentication implementation.
-- No custom backend API for the MVP.
-- The application is not deployed or hosted; Supabase is the only remote service it uses.
+- No custom backend API for the MVP. Location Evaluation uses server actions (§15).
+- The application is not deployed or hosted. Supabase is the only backend; Location Evaluation also calls INEGI DENUE, OpenStreetMap and Claude through the local Claude Code login (§15).
 - One Supabase project is the only backend environment.
 - Automated tests run only against the local test stack, never against the Supabase project.
 - One business per authenticated user.
@@ -600,3 +601,159 @@ Architecture is ready for implementation when:
 - Business status behavior is defined.
 - Internationalization and language preference storage are defined.
 - Security and environment decisions are sufficiently specified.
+
+## 15. Location Evaluation
+
+Behavior: `specification.md` §12. Storage: `database.md` §13. Decisions: `docs/tasks/02-location-evaluation.md` TASK-022.
+
+### Flow
+
+```text
+Form (client)
+  → searchPlaces(text)        server action → Nominatim
+  → runEvaluation(input)      server action:
+       DENUE Buscar (radius + 300 m)
+       → classify → candidate zones and metrics       (deterministic)
+       → agent proposal (Claude Code, JSON schema)     (non-deterministic)
+       → validation → scoring                          (deterministic)
+       → insert location_evaluations (user session, RLS)
+  → /evaluations/{id}         results, detail, comparison read the stored row
+  → askAgent(id, messages)    server action: loads the row through RLS → Claude Code
+```
+
+Each step is a plain function. The pipeline receives the DENUE, geocoding and agent calls as parameters, so tests replace them without network access. No agent decides which APIs to call.
+
+### Modules
+
+| Path | Responsibility |
+|---|---|
+| `lib/location/types.ts` | Input, establishment, zone and result contracts |
+| `lib/location/denue.ts` | DENUE `Buscar` request and parsing (server only) |
+| `lib/location/geocode.ts` | Nominatim search (server only) |
+| `lib/location/classification.ts` | Industry → SCIAN prefixes, the only copy |
+| `lib/location/zones.ts` | Distances, cells, candidates and metrics |
+| `lib/location/scoring.ts` | Factors, weights and score |
+| `lib/location/agent.ts` | Prompts, output schema and validation (pure) |
+| `lib/location/claude.ts` | Agent SDK calls (server only) |
+| `app/(protected)/evaluations/` | Pages and server actions |
+| `components/location/` | Form, map, cards, breakdown, chat |
+
+### Contracts
+
+```ts
+type EvaluationInput = {
+  reference: { label: string; lat: number; lon: number };
+  radiusM: 500 | 1000 | 2000 | 3000;
+  rentMxn: number | null;
+  industry: Industry; // from businesses, never from the form
+};
+
+type Establishment = {
+  id: string; name: string; activity: string; scian: string | null;
+  address: string; colonia: string; street: string;
+  lat: number; lon: number; staffMin: number | null; staffLabel: string | null;
+  category: "same" | "related" | "other";
+};
+
+type Factor = {
+  key: "activity" | "competition" | "related" | "staff";
+  available: boolean;
+  zone: number; area: number;        // densities per km²
+  ratio: number | null;              // zone ÷ area
+  value: number | null;              // 0–1
+  weight: number; points: number | null;
+};
+
+type Zone = {
+  rank: number; name: string; lat: number; lon: number; distanceM: number;
+  score: number; factors: Factor[];
+  counts: { total: number; same: number; related: number; other: number };
+  staffMin: number;
+  explanation: { summary: string; opportunities: string[]; considerations: string[]; conclusion: string };
+  establishments: Establishment[];   // within the 300 m zone
+};
+
+type EvaluationResult = {
+  source: "INEGI DENUE"; queriedAt: string; datasetDate: string | null;
+  area: { counts: Zone["counts"]; staffMin: number };
+  zones: Zone[];                      // 1–3, sorted by score
+};
+```
+
+DENUE contact fields (phone, email, website) are discarded at parsing and never stored.
+
+### DENUE
+
+- Request: `GET https://www.inegi.org.mx/app/api/denue/v1/consulta/Buscar/todos/{lat},{lon}/{radiusM + 300}/{DENUE_TOKEN}`, timeout 30 s, no caching between evaluations.
+- Parsing:
+  - SCIAN class = characters 6–11 of `CLEE`, verified in TASK-024.
+  - `staffMin` = the lower bound of `Estrato`.
+  - Records with invalid coordinates are skipped.
+- Errors: network failure, timeout, non-JSON body or "No autorizado" → `denue_unavailable`.
+
+### Geocoding and map
+
+- Nominatim `search` from the server with `countrycodes=mx`, `limit=5`, `accept-language` from the UI language and an identifying User-Agent. It is called only on submit, following the usage policy (no autocomplete, at most 1 request per second).
+- Maps use Leaflet with OpenStreetMap tiles and attribution, loaded only in the browser.
+
+### Classification
+
+SCIAN prefixes decide whether an establishment is `same`, `related` or `other`. A code matching both counts as `same`.
+
+| Industry | Same industry | Related businesses |
+|---|---|---|
+| food_beverage | 722 | 461, 7139, 721 |
+| clothing_accessories | 463 | 462, 465, 8121 |
+| technology_electronics | 4662, 8112 | 465, 462 |
+| beauty_personal_care | 8121 | 463, 464 |
+| health | 621 | 464, 622 |
+| education | 611 | 465, 722 |
+| professional_services | 54 | 52, 53, 56 |
+| construction_maintenance | 23, 811 | 467, 4661 |
+| retail | 46 | 722, 812 |
+| other | — | — |
+
+### Candidate zones
+
+- Cells: a 300 m grid aligned to the reference point and clipped to the exploration circle.
+- Candidate: a cell with at least 10 establishments. Center = the mean of their coordinates. Zone = the 300 m circle around the center.
+- Insufficient data: fewer than 20 establishments in the area, or no candidate.
+- Agent input per candidate: ID, distance and direction from the reference, `counts`, `staffMin`, factor ratios rounded to one decimal, the five most common activities with counts, and the most common colonia and street.
+
+### Scoring
+
+- Area = the exploration circle. Density = count per km².
+- Factor values:
+  - `activity`: all establishments; value = min(ratio ÷ 2, 1).
+  - `competition`: same-industry establishments; value = 1 − min(ratio ÷ 2, 1), or 1 when the area has none.
+  - `related`: related establishments; value = min(ratio ÷ 2, 1), or 0 when the area has none.
+  - `staff`: sum of `staffMin`; value = min(ratio ÷ 2, 1).
+- Weights: activity 30, competition 30, related 25, staff 15.
+- Score = round(100 × Σ weight × value ÷ Σ weight of available factors).
+- Unavailable factors:
+  - `competition` and `related`: industry `other`;
+  - `staff`: no establishment in the area has an `Estrato`.
+- Zones are sorted by score, ties by distance to the reference.
+
+### Agent
+
+- `@anthropic-ai/claude-agent-sdk` `query()` with model `claude-sonnet-5-5`. Isolation options:
+  - `tools: []`;
+  - `settingSources: []`, `mcpServers: {}`, `strictMcpConfig: true`;
+  - `persistSession: false`;
+  - `cwd` = an empty temporary directory.
+
+  The agent cannot read files or run commands, so text inside DENUE data or chat messages cannot act on the machine.
+- Authentication is the Claude Code login of the user running `next dev`. The project stores no key. If Claude Code is not logged in, the result is `analysis_failed`.
+- Proposal:
+  - Called with `outputFormat: { type: "json_schema" }`: `{ zones: [{ candidateId, summary, opportunities[], considerations[], conclusion }] }`, at most 3.
+  - Validation follows `specification.md` SPEC-LOC-05.
+  - Allowed numbers: every number given for that candidate, plus 300.
+- Chat:
+  - The system prompt holds the evaluation summary: input, area counts, and each zone's factors, counts, top activities and explanation.
+  - The last 10 messages are sent as the conversation. Plain-text answer.
+- Timeouts: proposal 60 s, chat 45 s.
+
+### Errors
+
+Server actions return an error key (`location.errors.<key>`): `place_not_found`, `geocoding_unavailable`, `denue_unavailable`, `insufficient_data`, `analysis_failed`, `no_valid_zones`. The form keeps its state and offers Retry.

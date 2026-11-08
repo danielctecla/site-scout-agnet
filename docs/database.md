@@ -1,6 +1,6 @@
 # Database Design — Business Management MVP
 
-**Version:** 0.7  
+**Version:** 0.8  
 **Status:** Defined  
 **Last updated:** 2026-11-08  
 **Database:** Supabase PostgreSQL
@@ -618,3 +618,54 @@ The database design is considered implemented when:
 - [ ] `updated_at` is maintained automatically.
 - [ ] Database migrations are version-controlled and reproducible on the local test stack with `supabase db reset`.
 - [ ] All migrations are applied to the Supabase project with no schema drift (`supabase migration list`, `supabase db diff --linked`).
+
+## 13. location_evaluations
+
+Stores completed Location Evaluations (`specification.md` §12). The application has no history screen; rows give results, detail and comparison a URL, and give the agent chat trusted context.
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `id` | UUID | NO | `gen_random_uuid()` |
+| `user_id` | UUID | NO | `auth.uid()` |
+| `input` | JSONB | NO | none |
+| `result` | JSONB | NO | none |
+| `created_at` | TIMESTAMPTZ | NO | `now()` |
+
+```sql
+constraint location_evaluations_pkey primary key (id),
+constraint location_evaluations_user_id_fkey foreign key (user_id)
+  references public.profiles (id) on delete cascade,
+constraint location_evaluations_input_check check (jsonb_typeof(input) = 'object'),
+constraint location_evaluations_result_check check (
+  jsonb_typeof(result) = 'object' and pg_column_size(result) <= 5000000
+)
+```
+
+- `input` and `result` follow the TypeScript contract in `architecture.md` §15. The database checks only their type and size.
+- Only evaluations with at least one valid zone are stored. Rows are never updated.
+- Index: `location_evaluations_user_id_idx` on `user_id`, used by the RLS predicate and the foreign key.
+
+```sql
+alter table public.location_evaluations enable row level security;
+
+revoke all on table public.location_evaluations from anon, authenticated;
+grant select, insert on table public.location_evaluations to authenticated;
+
+create policy location_evaluations_select_own on public.location_evaluations
+  for select to authenticated
+  using (user_id = (select auth.uid()));
+
+create policy location_evaluations_insert_own on public.location_evaluations
+  for insert to authenticated
+  with check (user_id = (select auth.uid()));
+```
+
+- UPDATE and DELETE: no privilege and no policy. Deleting the Auth user cascades through `profiles`.
+- No SECURITY DEFINER function is added.
+- Accepted: the server action inserts with the user's own session, so a user could insert a fabricated evaluation through the Data API. Only that user can read it, and only that user's chat uses it.
+
+Acceptance criteria:
+
+- [ ] A user reads and inserts only their own evaluations; `anon` has no access.
+- [ ] Updates and deletes are rejected.
+- [ ] Deleting an Auth user deletes their evaluations.

@@ -1,12 +1,12 @@
-# Specification — Authentication & Business Onboarding
+# Specification — Authentication, Business Onboarding & Location Evaluation
 
-**Version:** 0.5  
+**Version:** 0.6  
 **Status:** Updated  
-**Last updated:** 2026-11-07
+**Last updated:** 2026-11-08
 
 ## 1. Purpose
 
-Define the expected behavior of authentication, personal onboarding, business onboarding, and dashboard access.
+Define the expected behavior of authentication, personal onboarding, business onboarding, dashboard access and Location Evaluation (§12).
 
 This specification describes observable system behavior independently of implementation details.
 
@@ -432,3 +432,120 @@ Resolved previously:
 - Changing a business from `planning` to `active`: out of scope (`requirements.md` §6).
 - Editing business information after onboarding: out of scope (`requirements.md` §6).
 - Editing personal information after onboarding: not allowed (`requirements.md` FR-06).
+
+## 12. Location Evaluation
+
+Components, contracts, classification and scoring details are in `architecture.md` §15; storage in `database.md` §13.
+
+### SPEC-LOC-01 — Access
+
+**Given** an authenticated user whose onboarding is complete
+**When** they choose "Evaluate a location" on the dashboard
+**Then** `/evaluations/new` opens. Every `/evaluations` route follows the `/dashboard` rules of SPEC-ROUTE-05.
+
+### SPEC-LOC-02 — Reference Location Search
+
+**Given** the evaluation form
+**When** the user types an address, colonia or place and presses Search
+**Then** the system shows up to 5 matching places in Mexico and the user picks one.
+**And** if nothing matches, the system says so and keeps the text for another search. The search runs only on submit, never while typing.
+
+### SPEC-LOC-03 — Form
+
+- Fields: reference location (required, picked from the results), exploration radius (0.5, 1, 2 or 3 km; default 1 km) and monthly rent in MXN (optional, whole number from 1 to 10,000,000).
+- The industry comes from the user's business and is shown, not asked.
+- Submitting starts the evaluation and shows its progress. On success the results open; on error the form keeps every value (SPEC-LOC-12).
+
+### SPEC-LOC-04 — Candidate Zones
+
+**Given** the DENUE establishments within the radius plus 300 m
+**Then** the system splits the exploration circle into 300 m cells. Each cell with at least 10 establishments is a candidate: its center is the average position of the cell's establishments and its zone is the 300 m circle around that center.
+**And** if the area has fewer than 20 establishments or no candidate, the evaluation stops with "insufficient data", stating the counts found.
+
+### SPEC-LOC-05 — Agent Proposal and Validation
+
+- The agent receives the industry and each candidate's metrics, never scores, and returns up to three candidates. Each has a one-sentence summary, opportunities, considerations and a conclusion.
+- A response that breaks the schema is retried once; a second failure is an analysis error.
+- The system drops a proposed zone when:
+  - its candidate does not exist;
+  - its center is outside the exploration radius;
+  - it is within 400 m of a zone already accepted;
+  - its text contains a number that is not one of that zone's metrics.
+- The zone's name is built from data: its most common colonia and street.
+- One or two valid zones are shown as one or two. With no valid zone the evaluation stops with "no valid alternatives".
+
+### SPEC-LOC-06 — Score
+
+- Each zone gets a 0–100 score from four factors: commercial activity, direct competition, related businesses and staff size (`architecture.md` §15).
+- A factor without data is shown as "not available" and its weight is excluded.
+- The score is computed only by the system. The same establishments and parameters always give the same score.
+- Rent is never part of the score.
+
+### SPEC-LOC-07 — Results
+
+**Given** a completed evaluation
+**When** the user opens `/evaluations/{id}`
+**Then** they see:
+- the reference location and radius;
+- a map with the reference point and numbered zone markers;
+- one card per zone sorted by score, with name, location, score, summary, "View detail" and "Compare";
+- the source with the query date;
+- the agent chat (SPEC-LOC-10).
+
+### SPEC-LOC-08 — Zone Detail
+
+`/evaluations/{id}/zones/{rank}` shows:
+
+1. **Identification:** the zone name, its location, its number and a map.
+2. **Score and breakdown:** the overall score, then for each factor what it measures, the data used, its contribution and its limitations.
+3. **Map of the zone:** the zone radius and its establishments, with same-industry establishments distinguished from the rest. Selecting a marker shows the name, activity, address, distance to the zone center and DENUE ID.
+4. **Agent explanation:** opportunities, considerations and conclusion.
+5. **Establishments:** counts of same-industry, related and other establishments, and the full list.
+6. **Source:** INEGI DENUE, the query date, the dataset date or "not reported by the API", the limitations, and the note that a DENUE record does not guarantee the establishment still operates.
+7. **Rent:** the amount labeled as entered by the user, or "not provided".
+8. **Actions:** back to results, compare, ask the agent and view establishments. There is no previous/next navigation.
+
+### SPEC-LOC-09 — Comparison
+
+`/evaluations/{id}/compare` shows every zone of the evaluation side by side:
+- the score;
+- each factor's value and contribution;
+- the counts of all, same-industry and related establishments;
+- the minimum staff.
+
+It has no charts.
+
+### SPEC-LOC-10 — Agent Chat
+
+- On desktop the chat is a right-side panel on the results and detail pages; on mobile it opens as a separate sheet.
+- The system sends the agent the stored evaluation of the signed-in user, never data from the browser.
+- The agent answers only from that evaluation. It says when data is not available and never changes scores.
+- Messages are not stored. Each message has at most 1,000 characters.
+
+### SPEC-LOC-11 — Data Isolation
+
+A user can read and create only their own evaluations. Opening another user's evaluation shows "not found".
+
+### SPEC-LOC-12 — Errors
+
+| Situation | Behavior |
+|---|---|
+| Address not found | Message on the form; search again |
+| DENUE unavailable or rejects the request | "DENUE could not be reached"; Retry keeps the form |
+| Insufficient data | Explains which counts were too low; the user can change the location or radius |
+| Analysis failure (Claude unavailable, invalid response twice) | "The analysis could not be completed"; Retry keeps the form |
+| No valid alternatives | Explains that no zone passed validation |
+| Rent omitted | Evaluation continues; detail shows "not provided" |
+| Factor without data | Shown as "not available" |
+
+No error path shows example, cached or invented results.
+
+### SPEC-LOC-13 — Acceptance Criteria
+
+- The industry is taken from onboarding and never asked again.
+- Up to three zones, sorted by score, each backed by DENUE establishments inside the radius.
+- Scores are computed by the system, are reproducible and are explained per factor.
+- Every agent statement with a number matches a metric of its zone.
+- The source and dates are visible on results and detail.
+- Every error in SPEC-LOC-12 allows a retry without refilling the form.
+- Spanish and English; responsive from 320 px.

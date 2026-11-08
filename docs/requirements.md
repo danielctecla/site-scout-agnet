@@ -1,15 +1,15 @@
 # Requirements — Business Management Application
 
-**Version:** 0.8  
+**Version:** 0.9  
 **Status:** Updated  
 **Last updated:** 2026-11-08  
-**Scope:** Authentication and Business Onboarding MVP
+**Scope:** Authentication and Business Onboarding MVP; Location Evaluation (FR-14–FR-19)
 
 ## 1. Project Overview
 
 The application allows business owners and aspiring business owners to create an account and register their business.
 
-The MVP includes authentication, personal information collection, business onboarding, and protected dashboard access.
+The MVP includes authentication, personal information collection, business onboarding, and protected dashboard access. Location Evaluation lets a user with completed onboarding evaluate a commercial location and receive up to three alternative zones, based on INEGI DENUE data and explained by an AI agent.
 
 A business does not need to have a physical establishment to be registered. Users can register a business that is still in the planning stage.
 
@@ -143,6 +143,41 @@ The status must be determined from the user's onboarding answer.
 - Authentication emails use Supabase's default template and are not translated.
 - The design must allow moving the preference to the user's profile and synchronizing it across devices later, without changing translation files or UI components.
 
+### FR-14 — Location Evaluation Form
+
+- Only users with completed onboarding can evaluate a location. The business industry comes from onboarding and is not asked again.
+- The form asks for a reference location (search by address, colonia or place, then pick one result), an exploration radius (default 1 km) and an optional monthly rent.
+- Coordinates are never picked by hand on a map.
+
+### FR-15 — Data Source
+
+- INEGI DENUE is the only data source for establishments: name, economic activity, address, coordinates and staff-size range.
+- Indicators that DENUE does not provide (foot traffic, safety, transport, demographics, purchasing power, available properties, tourist or family areas) are not shown, estimated or simulated.
+- The source, the query date and the dataset update date (or that it is not reported) are always visible. A DENUE record does not guarantee that the establishment still operates.
+
+### FR-16 — Alternative Zones
+
+- An AI agent proposes up to three alternative zones from processed DENUE data and explains opportunities, considerations and a conclusion for each.
+- The backend accepts only zones backed by real DENUE establishments and inside the exploration area, and computes every score (0–100). The agent never invents establishments or numbers and never changes scores.
+- Results show the valid zones sorted by score, never more than three; fewer valid zones means fewer results, never filler.
+
+### FR-17 — Results, Detail and Comparison
+
+- Results show the reference location, the radius, a map with the zones and one card per zone (name, location, score, short explanation, detail and compare actions).
+- The detail of a zone shows its identification, score, factor breakdown, a map with nearby establishments, the agent's explanation, the establishments found, the source and limitations, and the rent as entered or as not provided.
+- The comparison shows every zone of the evaluation with the same criteria, without charts.
+
+### FR-18 — Agent Chat
+
+- The user can ask the agent about the evaluation in a side panel (desktop) or a separate sheet (mobile). The chat is not used to collect the initial data.
+- The agent answers only from the stored evaluation and says when data is not available.
+
+### FR-19 — Location Evaluation Errors
+
+- Address not found, DENUE failure and analysis failure show an understandable message and allow a retry without filling the form again.
+- Insufficient data explains what is missing. A factor without data shows as not available.
+- Rent is optional and never estimated or scored.
+
 ## 4. Non-Functional Requirements
 
 ### NFR-01 — Authentication
@@ -182,7 +217,8 @@ Supabase Auth must manage user identity, password storage, and sessions.
 ### NFR-06 — Environment and Secret Safety
 
 - Secrets must never be committed. Local configuration lives in a git-ignored `.env.local`; `.env.example` documents the variables without real values.
-- The application must use only the Supabase project URL and publishable key. It must never use the service-role key, secret API keys or the database password.
+- The application uses the Supabase project URL and publishable key, plus one server-only secret: the DENUE token. It must never use the service-role key, Supabase secret API keys or the database password.
+- The AI agent runs through the developer's local Claude Code login; the project stores no AI key.
 - Automated tests must never run against the Supabase project; they run against an ephemeral local test stack.
 - Schema changes must reach the Supabase project only through version-controlled migrations that have passed the database tests.
 
@@ -193,11 +229,19 @@ Supabase Auth must manage user identity, password storage, and sessions.
 - Every screen follows a single documented design system (tokens and base components), approved by the developer before any UI is implemented (TASK-020).
 - The interface must meet WCAG 2.2 AA: sufficient contrast, visible focus, full keyboard operation, labelled fields and errors, and reduced motion when the user prefers it.
 
+### NFR-08 — Location Evaluation Quality
+
+- An evaluation should complete in under one minute, subject to DENUE and Claude availability.
+- At most three main steps: form, results, detail.
+- The same data and parameters produce the same scores.
+- The design allows adding other cities later without changing the scoring.
+
 ## 5. Technical Constraints
 
 - Frontend: Next.js and TypeScript, located at the repository root alongside `supabase/`, styled with Tailwind CSS.
 - Runtime: the Next.js application runs only on the developer's computer (`http://localhost:3000`). It is not deployed or hosted.
-- Backend: a single Supabase project is the only backend environment and the only remote service the application uses. There are no separate development and production projects.
+- Backend: a single Supabase project is the only backend environment. There are no separate development and production projects.
+- Remote services: Supabase; for Location Evaluation only, INEGI DENUE, OpenStreetMap (Nominatim geocoding and map tiles) and Claude through the local Claude Code login.
 - Tooling: Supabase CLI (migrations, linked project, local test stack, database tests) and Git version control.
 - Authentication: Supabase Auth.
 - Database: Supabase PostgreSQL.
@@ -207,20 +251,20 @@ Supabase Auth must manage user identity, password storage, and sessions.
 - Business creation and onboarding completion: PostgreSQL function invoked through Supabase RPC.
 - Internationalization: Spanish (default) and English; the language preference is stored only in the browser.
 - Authentication emails: Supabase's built-in email service. No custom SMTP provider (it would add a second remote service; see AR-03).
-- Business location management is outside the onboarding scope.
+- Business location management is outside the onboarding scope. Location Evaluation uses a reference location per evaluation; it does not store a business address.
 
 ## 6. Out of Scope
 
 The MVP will not include:
 
 - Google Maps integration.
-- Business address or geographic location collection.
+- Storing a business address in the business record.
 - Multiple businesses per user.
 - Multiple physical establishments or branches.
 - Business invitations or team management.
 - Advanced user roles and permissions.
-- Business analytics.
-- External business integrations.
+- Business analytics other than Location Evaluation.
+- External business integrations other than those listed in §5.
 - Editing or transitioning business status after onboarding.
 - Editing business name or industry after onboarding.
 - Editing personal information after onboarding.
@@ -233,7 +277,8 @@ The MVP will not include:
 - Translated or customized authentication emails.
 - Deploying or hosting the application (Vercel, AWS or any other hosting service).
 - Separate development, staging or production Supabase projects.
-- Remote services other than Supabase, including a custom SMTP provider.
+- Remote services other than those listed in §5, including a custom SMTP provider.
+- Location Evaluation: evaluation history, PDF export, automatic data updates, indicators DENUE does not provide, advanced map filters, the chat as the initial form, multi-agent systems.
 
 ## 7. Accepted Risks
 
@@ -242,6 +287,9 @@ The MVP will not include:
 - **AR-03 — Built-in email delivery limits.** Supabase's built-in email service delivers only to addresses that are members of the project's Supabase organization, and it has a low hourly rate limit. Password recovery therefore works only for those addresses. Accepted for the local-only scope, where accounts belong to the developer and organization members. Automated recovery tests use the local test stack's email testing UI instead.
 - **AR-04 — Single backend environment.** The Supabase project holds the only real data and also receives every migration, with no separate environment to rehearse on. Mitigations: migrations are tested on the ephemeral local test stack first, reviewed with a dry run, and preceded by a database dump when data exists; the schema is never changed outside migrations; development tools access the project read-only.
 - **AR-05 — Project availability.** If the Supabase project is on the Free plan, Supabase pauses it after a period of inactivity, and it must be resumed from the dashboard before the application can be used. Accepted for the MVP.
+- **AR-06 — Agent proposals vary between runs.** Scores are deterministic, but the agent may choose different zones when the same evaluation is run again. A stored evaluation always shows the same result.
+- **AR-07 — DENUE freshness.** DENUE records may describe establishments that closed, and the API reports no dataset edition.
+- **AR-08 — Claude through the developer's login.** The agent uses the developer's Claude Code login on the machine running the app. Accepted only because the application runs locally for its owner.
 
 ## 8. Definition of Done
 
