@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
+import { LanguageSelector } from "@/components/language-selector";
 import mapPhoto from "@/public/images/auth-map.jpg";
 
 // Split screen for login, register and password recovery (architecture.md §2,
@@ -8,11 +9,9 @@ import mapPhoto from "@/public/images/auth-map.jpg";
 // and the language selector moves above the form.
 export function AuthLayout({
   brand,
-  languageSelector,
   children,
 }: {
   brand: string;
-  languageSelector: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -20,7 +19,9 @@ export function AuthLayout({
       <section className="flex flex-col bg-panel px-6 py-7 sm:px-14 sm:py-9">
         <header className="flex items-center justify-between gap-3">
           <span className="text-brand">{brand}</span>
-          <div className="lg:hidden">{languageSelector}</div>
+          <div className="lg:hidden">
+            <LanguageSelector variant="outlined" />
+          </div>
         </header>
         <main className="flex flex-1 flex-col justify-center py-12">
           <div className="flex w-full max-w-110 flex-col gap-8">{children}</div>
@@ -36,7 +37,9 @@ export function AuthLayout({
           loading="eager"
           className="object-cover"
         />
-        <div className="absolute top-6 right-6">{languageSelector}</div>
+        <div className="absolute top-6 right-6">
+          <LanguageSelector variant="floating" />
+        </div>
       </aside>
     </div>
   );

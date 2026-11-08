@@ -6,7 +6,7 @@ import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("metadata");
-  return { title: t("title") };
+  return { title: { default: t("title"), template: `%s · ${t("title")}` } };
 }
 
 // Every page depends on request cookies (session and language), so pages are

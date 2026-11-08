@@ -479,6 +479,8 @@ Each task writes its pgTAP tests first. Each migration includes its RLS, policie
 
 #### TASK-011: Implement registration and login
 
+**Status:** Done (2026-11-08). `/register` and `/login` use Server Actions (`app/(auth)/actions.ts`) with `useActionState`; validation runs in the action and returns translation keys; the email is kept and focus moves to the first invalid field. Unit tests cover validation and the Auth error mapping (unknown codes → generic); integration tests confirm the Auth codes the app maps (duplicate, short password, invalid credentials, no email confirmation). A one-off browser run against the local stack (Chromium, Playwright) verified both flows, both languages and phone width; the automated end-to-end suite is TASK-017. `/onboarding` is a placeholder until TASK-014, and signed-in users are not yet redirected away from `/login` (TASK-013).
+
 **Objective:** Allow users to create accounts and authenticate.
 
 **Dependencies:** TASK-004, TASK-010, TASK-019.

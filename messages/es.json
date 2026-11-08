@@ -8,7 +8,46 @@
     }
   },
   "metadata": {
-    "title": "Business Management"
+    "title": "Business Management",
+    "login": "Iniciar sesión",
+    "register": "Crear cuenta",
+    "onboarding": "Registra tu negocio"
+  },
+  "auth": {
+    "fields": {
+      "email": "Correo electrónico",
+      "password": "Contraseña"
+    },
+    "login": {
+      "title": "Inicia sesión",
+      "subtitle": "Accede para continuar con tu negocio.",
+      "submit": "Continuar",
+      "pending": "Entrando…",
+      "forgotPassword": "¿La olvidaste?",
+      "noAccount": "¿No tienes cuenta?",
+      "register": "Crear cuenta"
+    },
+    "register": {
+      "title": "Crea tu cuenta",
+      "subtitle": "Registra tu negocio, tengas local o no.",
+      "submit": "Crear cuenta",
+      "pending": "Creando tu cuenta…",
+      "passwordHint": "Al menos 8 caracteres.",
+      "haveAccount": "¿Ya tienes cuenta?",
+      "login": "Inicia sesión"
+    }
+  },
+  "onboarding": {
+    "personal": {
+      "title": "Cuéntanos sobre ti",
+      "subtitle": "Usaremos estos datos en tu perfil. No podrás cambiarlos después de terminar."
+    }
+  },
+  "validation": {
+    "emailRequired": "Escribe tu correo electrónico.",
+    "emailInvalid": "Escribe un correo válido, como nombre@ejemplo.com.",
+    "passwordRequired": "Escribe tu contraseña.",
+    "passwordTooShort": "Usa al menos 8 caracteres."
   },
   "industries": {
     "food_beverage": "Alimentos y bebidas",

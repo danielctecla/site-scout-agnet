@@ -4,7 +4,6 @@ import {
   FieldLabel,
   FieldMessages,
   fieldControl,
-  fieldControlInvalid,
   fieldDescription,
 } from "./field";
 
@@ -41,9 +40,8 @@ export function SelectField({
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
           className={cx(
-            fieldControl,
+            fieldControl(Boolean(error)),
             "appearance-none pr-11 invalid:text-ink-tertiary",
-            error && fieldControlInvalid,
             className,
           )}
           {...select}

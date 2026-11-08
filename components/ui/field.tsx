@@ -2,13 +2,18 @@ import type { ReactNode } from "react";
 
 // Shared pieces of the form field primitives.
 
-export const fieldControl =
-  "h-[54px] w-full rounded-lg border border-border bg-white px-4 text-body text-ink " +
-  "placeholder:text-ink-tertiary focus:border-ink focus:outline-none focus:ring-3 focus:ring-ink/12 " +
+const fieldBase =
+  "h-[54px] w-full rounded-lg border bg-white px-4 text-body text-ink " +
+  "placeholder:text-ink-tertiary focus:outline-none focus:ring-3 " +
   "disabled:bg-panel disabled:text-ink-tertiary";
 
-export const fieldControlInvalid =
-  "border-error focus:border-error focus:ring-error/12";
+// Exactly one color set is applied, so the error colors never compete with
+// the normal focus colors in the generated CSS.
+export function fieldControl(invalid: boolean) {
+  return invalid
+    ? `${fieldBase} border-error focus:border-error focus:ring-error/12`
+    : `${fieldBase} border-border focus:border-ink focus:ring-ink/12`;
+}
 
 // Ids of the hint and error paragraphs, and the aria-describedby value that
 // points to whichever is shown (the error replaces the hint).

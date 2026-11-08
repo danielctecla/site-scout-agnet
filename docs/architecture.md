@@ -189,6 +189,8 @@ Defined in `supabase/config.toml` (used by the local test stack) and mirrored in
 
 ### Registration Flow
 
+Registration and login run in Server Actions with the server client, so Supabase sets the session cookies on the response. Validation runs in the action and returns translation keys.
+
 1. User submits email and password (client validation: email format, at least 8 characters).
 2. Next.js calls Supabase Auth `signUp`.
 3. Supabase creates the authentication user. In the same transaction, the `on_auth_user_created` trigger creates the initial profile; if the trigger fails, the registration fails.
