@@ -90,6 +90,7 @@
   "dashboard": {
     "greeting": "Hi, {name}",
     "subtitle": "This is your business.",
+    "industry": "Industry",
     "signOut": "Sign out",
     "signingOut": "Signing out…"
   },

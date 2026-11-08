@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import {
   redirectFor,
   rootDestination,
@@ -18,8 +19,11 @@ type Session = {
 };
 
 // Validates the user with getClaims() (never getSession()) and reads the
-// onboarding state through RLS (architecture.md §7).
+// onboarding state through RLS (architecture.md §7). connection(): these pages
+// depend on the session, so they render only for a real request, never in a
+// prerender or prefetch (getClaims() reads the current time).
 async function readSession(): Promise<Session> {
+  await connection();
   const supabase = await createClient();
   const user = await getCurrentUser(supabase);
   if (!user) return { supabase, user, state: "anonymous" };

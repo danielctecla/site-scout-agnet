@@ -90,6 +90,7 @@
   "dashboard": {
     "greeting": "Hola, {name}",
     "subtitle": "Este es tu negocio.",
+    "industry": "Industria",
     "signOut": "Cerrar sesión",
     "signingOut": "Cerrando sesión…"
   },

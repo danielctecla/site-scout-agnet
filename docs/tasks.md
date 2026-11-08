@@ -622,6 +622,8 @@ Each task writes its pgTAP tests first. Each migration includes its RLS, policie
 
 #### TASK-016: Implement the dashboard
 
+**Status:** Done (2026-11-08). White business card with the name, translated industry and status badge; RLS limits the read to the signed-in user.
+
 **Dependencies:** TASK-015.
 
 **Scope:** add the business card to the dashboard shell: business name, translated industry and status badge.
@@ -635,6 +637,8 @@ Each task writes its pgTAP tests first. Each migration includes its RLS, policie
 ### Phase 5 — End-to-end validation and final Supabase validation
 
 #### TASK-017: Validate the complete user journey
+
+**Status:** Done (2026-11-08). `npm run test:e2e` (`tests/e2e/journey.spec.ts`) builds the app against the local stack and passes. `CHROMIUM_PATH` optionally points to a system Chromium. Protected pages call `connection()`, so they render only for real requests.
 
 **Dependencies:** TASK-016.
 
