@@ -46,9 +46,9 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      # Postgres for pgTAP, plus Auth and the Data API for the integration
+      # Postgres for pgTAP, plus Auth, the Data API and the email testing UI for the integration
       # tests. The stack lives inside the runner and is discarded with it.
-      - run: npx supabase start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - run: npx supabase start -x realtime,storage-api,imgproxy,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
       # Applies every migration from scratch.
       - run: npx supabase db reset --local
       - run: npx supabase test db --local

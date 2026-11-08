@@ -518,6 +518,8 @@ Each task writes its pgTAP tests first. Each migration includes its RLS, policie
 
 #### TASK-012: Implement logout, session persistence and password recovery
 
+**Status:** Done (2026-11-08). Logout (`signOut`, scope local), `/forgot-password` with the neutral confirmation, `/auth/confirm` (PKCE code exchange; fixed error codes only) and `/update-password`. An integration test drives the whole recovery against the local stack and its email testing UI: another browser fails, the requesting browser succeeds, the link cannot be reused, and only the new password works. The local stack's email rate limit is raised in `config.toml` (not managed by `config push`). A one-off Chromium run verified logout (language kept), recovery from the UI, the link in another browser, an arbitrary `error` value (generic message) and `/auth/confirm` without a code. Session persistence across browser restarts is covered by TASK-017.
+
 **Objective:** Support persistent sessions, logout and account recovery.
 
 **Dependencies:** TASK-011.
@@ -547,13 +549,15 @@ Each task writes its pgTAP tests first. Each migration includes its RLS, policie
 - Complete password recovery in the same browser context, using the local email testing UI; the same link in a separate browser context shows the error.
 - Open an invalid and an expired recovery link.
 - Open `/auth/confirm` without a code.
-- The recovery email contains Spanish and English text.
+- The recovery email is Supabase's default template and links to `/auth/confirm` through Supabase.
 - An arbitrary `error` query parameter value shows the generic message, not the value.
 - The language preference is kept after logout.
 
 ---
 
 #### TASK-013: Implement route protection and the dashboard shell
+
+**Status:** Done (2026-11-08). The proxy applies the whole matrix with HTTP 307 redirects (see `architecture.md` §7 for why), and every page keeps `guardPage` as a second layer. Unit tests cover all 21 cells of SPEC-ROUTE-05; a one-off Chromium run checked every route in the three user states. The dashboard shell shows the greeting and the logout button; TASK-016 adds the business card.
 
 **Objective:** Ensure users access only the correct pages before onboarding pages are built.
 
@@ -562,7 +566,7 @@ Each task writes its pgTAP tests first. Each migration includes its RLS, policie
 **References:** `specification.md` SPEC-ROUTE-01 to SPEC-ROUTE-05; `architecture.md` §7.
 
 **Activities:**
-- Configure the proxy to redirect unauthenticated requests for protected routes to `/login`.
+- Configure the proxy to apply the route access matrix with HTTP redirects (GET and HEAD only).
 - Implement the shared server helper that validates the user and reads `onboarding_completed_at`.
 - Call the helper from every page whose access depends on state (not only from layouts).
 - Implement `/` redirects.

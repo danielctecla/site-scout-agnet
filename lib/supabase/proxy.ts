@@ -34,7 +34,14 @@ export async function updateSession(request: NextRequest) {
 
   // Validates the session and refreshes it if needed. It must run before the
   // response is returned, or a refreshed token would be lost.
-  await supabase.auth.getClaims();
+  const { data } = await supabase.auth.getClaims();
 
-  return response;
+  // A getter, because a token refresh replaces the response object.
+  return {
+    supabase,
+    userId: data?.claims?.sub ?? null,
+    get response() {
+      return response;
+    },
+  };
 }

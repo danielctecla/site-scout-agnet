@@ -121,11 +121,10 @@ The frontend will be responsible for:
 ```text
 app/
 ├── page.tsx                  # "/": redirects by session and onboarding state
-├── (auth)/
+├── (auth)/                   # split-screen layout; actions.ts holds the auth Server Actions
 │   ├── login/
 │   ├── register/
-│   └── forgot-password/
-├── (account)/
+│   ├── forgot-password/
 │   └── update-password/      # requires a session; exempt from onboarding redirects
 ├── (protected)/
 │   ├── onboarding/           # single route with two client-side steps
@@ -207,7 +206,7 @@ Registration and login run in Server Actions with the server client, so Supabase
 
 ### Logout Flow
 
-1. Next.js calls Supabase Auth `signOut`, which revokes the refresh token and clears the session cookies.
+1. A Server Action calls Supabase Auth `signOut({ scope: 'local' })`, which revokes this session's refresh token and clears the session cookies (other browsers stay signed in).
 2. The user is redirected to `/login`.
 
 An access token issued before logout remains valid until it expires (`requirements.md` AR-02). The language preference is not affected by logout.
@@ -342,9 +341,9 @@ Route access rules are defined in `specification.md` SPEC-ROUTE-05.
 
 Mechanism:
 
-1. **Proxy** (`proxy.ts`) runs on matched requests. It refreshes the session, writes updated cookies and redirects unauthenticated requests for protected routes to `/login`. This is an optimistic check only. The proxy does not handle language: URLs carry no locale.
-2. **Page-level server checks**: every page whose access depends on session or onboarding state calls a shared server helper that validates the user with `getClaims()` (or `getUser()`), never `getSession()`, reads `profiles.onboarding_completed_at` through RLS, and redirects according to the matrix.
-3. These checks run in page server components (or the helper they call), not only in layouts, because layouts are not re-rendered on every navigation.
+1. **Proxy** (`proxy.ts`) runs on matched requests. It refreshes the session and writes updated cookies. For GET and HEAD requests to the pages in the matrix, it validates the user with `getClaims()`, reads `profiles.onboarding_completed_at` through RLS and applies the whole matrix with HTTP 307 redirects, before anything is rendered. Server Action POSTs are never redirected. The proxy does not handle language: URLs carry no locale.
+2. **Why the proxy applies the matrix:** with Cache Components, a page response starts with a prerendered shell, so a `redirect()` thrown by the page arrives later and runs in the browser (HTTP 200 plus a client-side redirect). Redirecting in the proxy gives real HTTP redirects and no flash of the wrong page.
+3. **Page-level server checks** remain as a second layer: every page whose access depends on session or onboarding state calls `guardPage` (`lib/supabase/guards.ts`), which applies the same rules (`lib/routing.ts`) with validated claims, never `getSession()`. Pages call it themselves, not only layouts, because layouts are not re-rendered on every navigation.
 4. RLS and database privileges are the final security boundary.
 
 ## 8. Onboarding Data Flow

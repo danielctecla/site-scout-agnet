@@ -11,7 +11,10 @@
     "title": "Business Management",
     "login": "Sign in",
     "register": "Create account",
-    "onboarding": "Register your business"
+    "onboarding": "Register your business",
+    "forgotPassword": "Reset password",
+    "updatePassword": "New password",
+    "dashboard": "Your business"
   },
   "auth": {
     "fields": {
@@ -35,6 +38,25 @@
       "passwordHint": "At least 8 characters.",
       "haveAccount": "Already have an account?",
       "login": "Sign in"
+    },
+    "forgot": {
+      "title": "Reset your password",
+      "subtitle": "We'll send you a link to create a new one.",
+      "submit": "Send link",
+      "pending": "Sending…",
+      "sentTitle": "Check your email",
+      "sent": "If an account exists for {email}, we sent you a link to create a new password. Open it in this same browser; it expires in 1 hour.",
+      "backToLogin": "Back to sign in",
+      "linkExpired": "The link has expired. Request a new one.",
+      "linkInvalid": "The link isn't valid or was already used. Open it in the same browser where you requested it, or request a new one."
+    },
+    "update": {
+      "title": "Create a new password",
+      "subtitle": "You'll use it to sign in from now on.",
+      "label": "New password",
+      "hint": "At least 8 characters.",
+      "submit": "Save password",
+      "pending": "Saving…"
     }
   },
   "onboarding": {
@@ -42,6 +64,12 @@
       "title": "Tell us about yourself",
       "subtitle": "We'll use this for your profile. You can't change it after you finish."
     }
+  },
+  "dashboard": {
+    "greeting": "Hi, {name}",
+    "subtitle": "This is your business.",
+    "signOut": "Sign out",
+    "signingOut": "Signing out…"
   },
   "validation": {
     "emailRequired": "Enter your email.",
@@ -81,7 +109,8 @@
       "generic": "We couldn't complete that. Please try again.",
       "invalid_credentials": "Incorrect email or password.",
       "user_already_exists": "An account with this email already exists.",
-      "weak_password": "Use at least 8 characters."
+      "weak_password": "Use at least 8 characters.",
+      "same_password": "Your new password must be different from the old one."
     }
   }
 }

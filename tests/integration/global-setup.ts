@@ -19,11 +19,16 @@ export default function setup(project: TestProject) {
   const env = parseStatusEnv(output);
   project.provide("supabaseUrl", assertLocalSupabaseUrl(env.API_URL));
   project.provide("supabasePublishableKey", env.PUBLISHABLE_KEY);
+  project.provide(
+    "mailpitUrl",
+    assertLocalSupabaseUrl(env.MAILPIT_URL ?? env.INBUCKET_URL),
+  );
 }
 
 declare module "vitest" {
   export interface ProvidedContext {
     supabaseUrl: string;
     supabasePublishableKey: string;
+    mailpitUrl: string;
   }
 }

@@ -6,6 +6,7 @@ const AUTH_ERROR_KEYS = {
   user_already_exists: "errors.auth.user_already_exists",
   email_exists: "errors.auth.user_already_exists",
   weak_password: "errors.auth.weak_password",
+  same_password: "errors.auth.same_password",
 } as const;
 
 export type AuthErrorKey =

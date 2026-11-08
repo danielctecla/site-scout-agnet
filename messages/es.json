@@ -11,7 +11,10 @@
     "title": "Business Management",
     "login": "Iniciar sesión",
     "register": "Crear cuenta",
-    "onboarding": "Registra tu negocio"
+    "onboarding": "Registra tu negocio",
+    "forgotPassword": "Recuperar contraseña",
+    "updatePassword": "Nueva contraseña",
+    "dashboard": "Tu negocio"
   },
   "auth": {
     "fields": {
@@ -35,6 +38,25 @@
       "passwordHint": "Al menos 8 caracteres.",
       "haveAccount": "¿Ya tienes cuenta?",
       "login": "Inicia sesión"
+    },
+    "forgot": {
+      "title": "Recupera tu contraseña",
+      "subtitle": "Te enviaremos un enlace para crear una nueva.",
+      "submit": "Enviar enlace",
+      "pending": "Enviando…",
+      "sentTitle": "Revisa tu correo",
+      "sent": "Si existe una cuenta con {email}, te enviamos un enlace para crear una nueva contraseña. Ábrelo en este mismo navegador; caduca en 1 hora.",
+      "backToLogin": "Volver a iniciar sesión",
+      "linkExpired": "El enlace caducó. Pide uno nuevo.",
+      "linkInvalid": "El enlace no es válido o ya se usó. Ábrelo en el mismo navegador donde lo pediste, o pide uno nuevo."
+    },
+    "update": {
+      "title": "Crea una nueva contraseña",
+      "subtitle": "Después podrás entrar con ella.",
+      "label": "Nueva contraseña",
+      "hint": "Al menos 8 caracteres.",
+      "submit": "Guardar contraseña",
+      "pending": "Guardando…"
     }
   },
   "onboarding": {
@@ -42,6 +64,12 @@
       "title": "Cuéntanos sobre ti",
       "subtitle": "Usaremos estos datos en tu perfil. No podrás cambiarlos después de terminar."
     }
+  },
+  "dashboard": {
+    "greeting": "Hola, {name}",
+    "subtitle": "Este es tu negocio.",
+    "signOut": "Cerrar sesión",
+    "signingOut": "Cerrando sesión…"
   },
   "validation": {
     "emailRequired": "Escribe tu correo electrónico.",
@@ -81,7 +109,8 @@
       "generic": "No pudimos completar la operación. Inténtalo de nuevo.",
       "invalid_credentials": "Correo o contraseña incorrectos.",
       "user_already_exists": "Ya existe una cuenta con este correo.",
-      "weak_password": "Usa al menos 8 caracteres."
+      "weak_password": "Usa al menos 8 caracteres.",
+      "same_password": "La nueva contraseña debe ser distinta de la anterior."
     }
   }
 }

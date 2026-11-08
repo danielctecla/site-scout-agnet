@@ -10,8 +10,16 @@ const variants: Record<Variant, string> = {
     "border border-border bg-white text-ink hover:bg-panel disabled:text-ink-tertiary",
 };
 
+const sizes = {
+  // Form actions.
+  md: "h-[54px] px-6 text-body",
+  // Header actions such as "Cerrar sesión".
+  sm: "h-11 px-4 text-label",
+} as const;
+
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: Variant;
+  size?: keyof typeof sizes;
   // While pending the button is disabled and shows a spinner; pass the
   // in-progress label (for example "Guardando…") as children.
   pending?: boolean;
@@ -19,6 +27,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 export function Button({
   variant = "primary",
+  size = "md",
   pending = false,
   disabled,
   type = "button",
@@ -32,7 +41,8 @@ export function Button({
       disabled={disabled || pending}
       aria-busy={pending || undefined}
       className={cx(
-        "inline-flex h-[54px] items-center justify-center gap-2.5 rounded-lg px-6 text-body font-medium transition-colors",
+        "inline-flex items-center justify-center gap-2.5 rounded-lg font-medium transition-colors",
+        sizes[size],
         "focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-ink",
         "disabled:cursor-not-allowed",
         variants[variant],

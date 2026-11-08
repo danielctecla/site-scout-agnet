@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { CredentialsForm } from "@/components/auth/credentials-form";
 import { PageIntro } from "@/components/ui/page-intro";
 import { TextLink } from "@/components/ui/text-link";
+import { guardPage } from "@/lib/supabase/guards";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("metadata");
@@ -10,6 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RegisterPage() {
+  await guardPage("guest");
   const t = await getTranslations("auth.register");
   return (
     <>
