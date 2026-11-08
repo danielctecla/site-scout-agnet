@@ -589,103 +589,42 @@ Each task writes its pgTAP tests first. Each migration includes its RLS, policie
 
 #### TASK-014: Implement the personal information page
 
-**Objective:** Collect and persist the user's personal information (Page 1).
+**Dependencies:** TASK-013, TASK-021.
 
-**Dependencies:** TASK-008, TASK-013, TASK-021.
+**Scope (keep it simple):**
+- Replace the `/onboarding` placeholder with step 1 on the approved layout: full name and date of birth, pre-filled with saved values.
+- On Next, validate (required name of 1–100 characters, a date giving 16–100 years) and call `save_personal_information`; then show step 2 on the same page.
+- Show database errors through `errors.<code>`; anything else shows `errors.generic`.
 
-**References:** `specification.md` SPEC-ONB-01 to SPEC-ONB-04, SPEC-ERR-01; `architecture.md` §8.
+**Done when:** a user can save step 1, sees errors in their language, and finds the values pre-filled when returning.
 
-**Activities:**
-- Build `/onboarding` as one route with two client-side steps, always starting at Page 1.
-- Load the saved profile and pre-populate the form.
-- Add full name and date of birth inputs (native date input).
-- Validate: trimmed full name of 1–100 characters (counted in code points); a date of birth giving an age of 16–100 years today.
-- Call `save_personal_information` when the user selects Next.
-- Implement the error-mapping module: database contract codes map to `errors.<code>` translation keys, anything else to `errors.generic`. The module returns keys, not text.
-
-**Acceptance criteria:**
-- Onboarding always starts at Page 1 with previously saved values, including after a refresh on Page 2.
-- Both fields are required.
-- Invalid names and dates of birth cannot be saved.
-- Information is persisted trimmed after selecting Next.
-- Contract errors show their mapped message; other errors show a generic message.
-- The user cannot proceed with invalid information.
-
-**Tests:**
-- Empty name and whitespace-only name.
-- Name with 101 characters.
-- Empty date of birth; dates giving ages 15 and 101 are rejected; ages 16 and 100 are accepted (boundary dates computed from today).
-- Valid information, including surrounding whitespace that is trimmed.
-- Restore saved information after leaving and returning.
-- Error-mapping unit tests for every contract code.
-- Validation and error messages in Spanish and English.
-- Change language with values entered: the step and values are kept.
+**Tests:** unit tests for the two validation helpers only.
 
 ---
 
 #### TASK-015: Implement the business information page
 
-**Objective:** Collect business information and complete onboarding (Page 2).
+**Dependencies:** TASK-014.
 
-**Dependencies:** TASK-009, TASK-014.
+**Scope (keep it simple):**
+- Step 2 on the same page: business name, industry dropdown (`INDUSTRIES`), and the two establishment choices (none preselected); Back returns to step 1 keeping the values.
+- On Finish, call `finish_onboarding` with `active` or `planning`; on success (or `onboarding_already_completed`) go to `/dashboard`.
 
-**References:** `specification.md` SPEC-BIZ-01 to SPEC-BIZ-07, SPEC-ONB-05 to SPEC-ONB-09, SPEC-DATA-02; `architecture.md` §8; `database.md` §4, §7.4.
+**Done when:** a user can finish onboarding with either status and lands on the dashboard.
 
-**Activities:**
-- Build Page 2 within `/onboarding`.
-- Add the business name input.
-- Add the industry selection from the `INDUSTRIES` constant (codes in display order), with names from `industries.<code>` in the current language; codes are submitted.
-- Add the establishment question (Yes/No, no default).
-- Implement `statusFromEstablishment`.
-- Add a Back action to Page 1.
-- Validate required fields and the 1–120 character business name.
-- Call `finish_onboarding` when the user selects Finish; disable Finish while the request is in flight.
-- Redirect to `/dashboard` on success or on `onboarding_already_completed`; otherwise show the mapped error and stay on Page 2.
-
-**Acceptance criteria:**
-- Business name is required and has 1–120 characters after trimming.
-- Industry is required and must be supported.
-- Establishment answer is required and not preselected.
-- Answering Yes creates a business with status `active`; answering No creates one with status `planning`.
-- Business creation and onboarding completion are atomic.
-- A repeated or concurrent Finish results in one business and a redirect to the dashboard.
-- A failed call leaves onboarding incomplete.
-- Every code in `INDUSTRIES` is accepted by the database and has a display name in both languages.
-- Changing language on Page 2 keeps the step and the entered values.
-
-**Tests:**
-- Unit: `statusFromEstablishment` (Yes → `active`, No → `planning`).
-- Empty business name; 121-character name; missing industry; missing establishment answer.
-- Integration against the local stack: every `INDUSTRIES` code is accepted; an unknown code returns `invalid_industry`.
-- Failed RPC → onboarding remains incomplete.
-- Complete onboarding twice → redirected to the dashboard, one business.
-- Back to Page 1 and forward again.
-- Industry names and error messages in Spanish and English.
-- Change language on Page 2 with values entered: the step and values are kept.
+**Tests:** none beyond the database suite; the happy path is covered in TASK-017.
 
 ---
 
 #### TASK-016: Implement the dashboard
 
-**Objective:** Show the user's business after onboarding.
-
 **Dependencies:** TASK-015.
 
-**References:** `specification.md` SPEC-DASH-01.
+**Scope:** add the business card to the dashboard shell: business name, translated industry and status badge.
 
-**Activities:**
-- Read the user's business through the RLS-protected SELECT.
-- Display business name, industry display name (`industries.<code>`) and status label (`status.<status>`) in the current language.
+**Done when:** the dashboard shows the user's business in both languages.
 
-**Acceptance criteria:**
-- The dashboard shows the user's own business name, industry and status.
-- Industry and status labels follow the selected language; the business name is shown as entered.
-- The dashboard never shows another user's data.
-
-**Tests:**
-- Dashboard for a `planning` and an `active` business.
-- Dashboard in Spanish and English.
-- Two users see only their own business.
+**Tests:** none; covered in TASK-017.
 
 ---
 
@@ -693,60 +632,25 @@ Each task writes its pgTAP tests first. Each migration includes its RLS, policie
 
 #### TASK-017: Validate the complete user journey
 
-**Objective:** Verify that all features work together.
+**Dependencies:** TASK-016.
 
-**Dependencies:** TASK-016 (and transitively TASK-001 through TASK-015).
+**Scope:** one Playwright test against the local stack for the happy path: register → step 1 → step 2 → dashboard → logout → login. Run it locally; no extra suites.
 
-**Activities:**
-- Create Playwright end-to-end tests.
-- Test registration through dashboard.
-- Test onboarding abandonment after Page 1.
-- Test session restoration.
-- Test password recovery through the local email testing UI.
-- Test invalid input and failed operations.
-- Test data isolation with multiple users.
-- Test language: Spanish by default, switching to English, persistence after reload, browser restart and logout, and switching during onboarding.
-- Fix regressions.
-
-**Acceptance criteria:**
-- A new user can register, complete onboarding and reach the dashboard, in Spanish and in English.
-- Without a stored preference the interface is Spanish; a chosen language persists in the same browser.
-- A user who abandons onboarding after Page 1 resumes at Page 1 with saved values.
-- A completed user cannot repeat onboarding or edit personal information.
-- A user can recover their password and log in with the new one.
-- Data remains isolated between users.
-- Critical user journeys pass end-to-end tests against the local test stack, locally and in CI.
+**Done when:** the test passes.
 
 ---
 
 #### TASK-018: Finalize and validate the Supabase project
 
-**Objective:** Confirm that the single Supabase project is fully configured, secured and working with the locally run application. Nothing is deployed.
-
 **Dependencies:** TASK-017.
 
-**References:** `architecture.md` §3, §11; `database.md` §8, §10, §12; `requirements.md` AR-03 to AR-05.
+**Scope:**
+- Confirm `supabase migration list` and `supabase config diff` show no differences, and the advisors show only the accepted `finish_onboarding` warning.
+- Manual smoke test on the project: register, onboarding, dashboard, logout, login. Delete the test accounts afterwards.
 
-**Activities:**
-- Apply any pending migrations through the migration workflow, including a database dump stored outside the repository if the project holds data.
-- Confirm with `supabase migration list` that the local and remote histories match, and with `supabase db diff --linked` that there is no schema drift.
-- Verify the project's auth settings match `config.toml`: email confirmation disabled, minimum password length 8, Site URL `http://localhost:3000`, redirect URLs, default email templates, built-in email service.
-- Run the Supabase security and performance advisors.
-- Run read-only catalog checks on the project: RLS enabled on both tables, the expected policies, table, column and function privileges, and the two SECURITY DEFINER functions with `search_path = ''`.
-- Run a manual smoke test with the application running locally against the project: registration, onboarding with both statuses (two accounts), dashboard, logout, login, password recovery to an organization member's address, and language switching.
-- Delete the smoke-test accounts (the cascade removes their profiles and businesses).
-- Confirm that no secret is tracked by Git and that `.env.local` is ignored.
-- Document in the README how to run the application locally, configure `.env.local`, apply future migrations and back up the database.
-- Record the project's plan limits that affect the application (email rate limit; pausing on inactivity if on the Free plan).
+**Done when:** the project matches the repository and the manual test works.
 
-**Acceptance criteria:**
-- All migrations are applied and there is no schema drift.
-- The project's auth settings match the documented configuration.
-- The advisors report no warnings other than the accepted `finish_onboarding` warning.
-- RLS, policies, privileges and function security attributes on the project match `database.md` §8.
-- The complete user journey works locally against the project, in Spanish and English.
-- No secrets are committed; the application uses only the project URL and publishable key.
-- The local run, migration and backup procedures are documented.
+---
 
 ## 3. Task dependency summary
 
@@ -781,6 +685,8 @@ Tasks that can run in parallel:
 - TASK-006, TASK-007 and TASK-008.
 
 ## 4. Implementation workflow
+
+**From TASK-014 on (2026-11-08): keep it simple.** Implement the scope, add only the tests the task names, run `npm run check`, update the task's status in one line and commit. No extra verification scripts, screenshots or new test layers unless something fails.
 
 For each task, follow this cycle:
 
