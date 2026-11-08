@@ -128,6 +128,8 @@
 
 #### TASK-004: Configure Supabase clients and session handling
 
+**Status:** Done (2026-11-08). `@supabase/supabase-js` 2.119, `@supabase/ssr` 0.12. Unit tests cover the environment check and the test guard; integration tests (`npm run test:integration`) cover signup, `getCurrentUser` and `finish_onboarding` concurrency against the local stack. Refreshing an expired session through the proxy needs a real browser session, so it is verified by the TASK-012 session persistence tests.
+
 **Objective:** Connect Next.js with Supabase Auth and PostgreSQL.
 
 **Dependencies:** TASK-002, TASK-003.
@@ -197,6 +199,8 @@
 ---
 
 #### TASK-020: Define the UX and visual design system
+
+**Status:** In progress. Decided: onboarding keeps two steps; light appearance only. The design direction is proposed as a visual prototype (login, register with an error, onboarding steps 1 and 2, dashboard, foundations) and awaits approval.
 
 **Objective:** Define the interaction and visual design before any screen is built, so the whole application follows one deliberate system inspired by Apple's onboarding (`requirements.md` NFR-07).
 
@@ -414,7 +418,7 @@ Each task writes its pgTAP tests first. Each migration includes its RLS, policie
 
 #### TASK-010: Verify database security, apply migrations and generate types
 
-**Status:** In progress. The consolidated security suite (`060_security.test.sql`) and the generated types (`lib/supabase/database.types.ts`, `npm run db:types`) are done. Pending: `supabase db push` to the project, `supabase migration list`, and the advisors.
+**Status:** Done (2026-11-08). 262 pgTAP tests pass locally. The six migrations are applied to the project and `supabase migration list` matches. Advisors: security reports only the accepted `finish_onboarding` warning; performance reports nothing. Read-only catalog checks on the project match §8. Types: `lib/supabase/database.types.ts` (`npm run db:types`).
 
 **Objective:** Prove the complete database security model on the local test stack, apply the migrations to the Supabase project and provide typed access for the frontend.
 

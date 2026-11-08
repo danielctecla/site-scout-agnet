@@ -6,9 +6,32 @@ export default defineConfig({
     alias: { "@": fileURLToPath(new URL(".", import.meta.url)) },
   },
   test: {
-    include: ["**/*.test.{ts,tsx}"],
-    // End-to-end tests run with Playwright; database tests with pgTAP.
-    exclude: [...configDefaults.exclude, "tests/e2e/**", "supabase/**"],
     environment: "node",
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "unit",
+          include: ["**/*.test.{ts,tsx}"],
+          // Integration tests need the local stack; e2e tests run with
+          // Playwright; database tests with pgTAP.
+          exclude: [
+            ...configDefaults.exclude,
+            "tests/integration/**",
+            "tests/e2e/**",
+            "supabase/**",
+          ],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "integration",
+          include: ["tests/integration/**/*.test.ts"],
+          globalSetup: ["tests/integration/global-setup.ts"],
+          testTimeout: 15_000,
+        },
+      },
+    ],
   },
 });

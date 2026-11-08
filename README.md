@@ -18,6 +18,9 @@ La aplicación corre **solo en tu computadora** (`http://localhost:3000`) y no s
 ```
 .
 ├── app/                     # Next.js App Router
+├── lib/supabase/            # Clientes de Supabase, helper de usuario y tipos generados
+├── proxy.ts                 # Refresca la sesión en cada request
+├── tests/                   # Guard de pruebas e integración contra el stack local
 ├── scripts/                 # Utilidades de desarrollo (escáner de secretos)
 ├── supabase/
 │   ├── config.toml          # Configuración del stack local y de Auth
@@ -80,6 +83,8 @@ Las pruebas automáticas corren **solo** contra una copia local y desechable de 
 npm run db:start   # levanta Postgres, Auth, API, Mailpit y Studio
 npm run db:reset   # recrea la base local desde las migraciones
 npm run db:test    # corre las pruebas pgTAP
+npm run test:integration   # Vitest contra el stack local
+npm run db:types   # regenera lib/supabase/database.types.ts
 npm run db:stop    # detiene el stack
 ```
 

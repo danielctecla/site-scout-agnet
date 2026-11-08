@@ -36,7 +36,7 @@ jobs:
       - run: npm run build
 
   database:
-    name: Database tests (local test stack)
+    name: Database and integration tests (local test stack)
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -46,9 +46,10 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      # Only Postgres is needed for pgTAP. The stack lives inside the runner
-      # and is discarded with it.
-      - run: npx supabase start -x gotrue,realtime,storage-api,imgproxy,kong,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      # Postgres for pgTAP, plus Auth and the Data API for the integration
+      # tests. The stack lives inside the runner and is discarded with it.
+      - run: npx supabase start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
       # Applies every migration from scratch.
       - run: npx supabase db reset --local
       - run: npx supabase test db --local
+      - run: npm run test:integration

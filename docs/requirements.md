@@ -227,6 +227,7 @@ The MVP will not include:
 - Self-service account deletion.
 - Storing the language preference in the database or synchronizing it across devices.
 - Languages other than Spanish and English.
+- Dark mode: the interface uses a light appearance only.
 - Automatic language detection from browser settings.
 - Language prefixes in URLs.
 - Translated or customized authentication emails.

@@ -73,8 +73,8 @@ The Next.js application lives at the repository root, alongside `supabase/`. Fol
 ├── components/ui/          # Design system primitives (TASK-020) (later)
 ├── i18n/                   # Locale configuration, preference stores, resolver, request config (§9) (later)
 ├── messages/               # Translation files: es.json (source), en.json (later)
-├── lib/                    # Supabase clients, auth helpers, error mapping, shared constants (later)
-├── proxy.ts                # Session refresh (later)
+├── lib/                    # Supabase clients (lib/supabase/), auth helpers, error mapping, shared constants
+├── proxy.ts                # Session refresh; route protection added in TASK-013
 ├── scripts/                # Development utilities: secret scanner
 ├── supabase/
 │   ├── config.toml         # Local Supabase configuration (auth settings)
@@ -82,7 +82,10 @@ The Next.js application lives at the repository root, alongside `supabase/`. Fol
 │   └── tests/
 │       ├── database/       # pgTAP tests (*.test.sql)
 │       └── helpers/        # Shared pgTAP setup, included by every test file
-├── tests/e2e/              # Playwright tests (later)
+├── tests/
+│   ├── support/            # Test guard and local-stack client
+│   ├── integration/        # Vitest against the local test stack (npm run test:integration)
+│   └── e2e/                # Playwright tests (later)
 ├── docs/
 ├── .githooks/              # pre-commit hook: secret scan of staged content
 ├── .github/workflows/      # CI (checks only)
@@ -539,12 +542,12 @@ Rules:
 GitHub Actions runs on every push (`.github/workflows/ci.yml`). It never deploys anything, holds no Supabase credentials and never connects to the Supabase project.
 
 - **checks:** secret scan, linting, type checking, format check, unit tests and `next build`.
-- **database:** starts a Postgres-only local test stack inside the runner, runs `supabase db reset --local` (every migration from scratch) and `supabase test db --local`.
+- **database:** starts a local test stack (Postgres, Auth and the Data API) inside the runner, runs `supabase db reset --local` (every migration from scratch), `supabase test db --local` and the integration tests.
 - **end-to-end** (added in TASK-017): Playwright against a local test stack with Auth, the Data API and the email testing UI.
 
 The repository is public, so GitHub Actions minutes are free.
 
-Locally, `npm run check` runs the same checks as the checks job, and `npm run db:reset && npm run db:test` runs the database job. The local stack scripts always pass `--local`. `supabase db reset --linked` and `supabase test db --linked` are never used, because they would erase or alter the Supabase project.
+Locally, `npm run check` runs the same checks as the checks job, and `npm run db:reset && npm run db:test && npm run test:integration` runs the database job. The local stack scripts always pass `--local`. `supabase db reset --linked` and `supabase test db --linked` are never used, because they would erase or alter the Supabase project.
 
 ## 12. Architectural Constraints
 
@@ -566,7 +569,7 @@ Locally, `npm run check` runs the same checks as the checks job, and `npm run db
 
 ## 13. Open Decisions
 
-1. Design direction (type, color, motion, screen layouts), to be proposed and approved in TASK-020.
+1. Design direction (type, color, motion, screen layouts): proposed in TASK-020 as a visual prototype, pending approval. Already decided: onboarding keeps two steps (`specification.md`), and the interface is light only.
 
 Resolved in this version: session expiration uses Supabase defaults (1-hour access tokens with automatic refresh and refresh token rotation); the Supabase CLI local stack in Docker is the ephemeral test harness; GitHub Actions runs checks only, plus a local pre-commit secret scan; the built-in email service with Supabase's default templates is accepted (no custom SMTP or custom templates; recovery uses the PKCE code exchange); Tailwind CSS for styling; Cache Components stays enabled.
 
