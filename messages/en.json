@@ -1,0 +1,48 @@
+{
+  "common": {
+    "appName": "Business Management",
+    "language": "Language",
+    "languages": {
+      "es": "Español",
+      "en": "English"
+    }
+  },
+  "metadata": {
+    "title": "Business Management"
+  },
+  "industries": {
+    "food_beverage": "Food & beverage",
+    "clothing_accessories": "Clothing & accessories",
+    "technology_electronics": "Technology & electronics",
+    "beauty_personal_care": "Beauty & personal care",
+    "health": "Health",
+    "education": "Education",
+    "professional_services": "Professional services",
+    "construction_maintenance": "Construction & maintenance",
+    "retail": "Retail",
+    "other": "Other"
+  },
+  "status": {
+    "planning": "Planning",
+    "active": "Active"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "not_authenticated": "Your session has ended. Please sign in again.",
+    "profile_not_found": "We couldn't find your profile. Sign out and sign in again.",
+    "onboarding_already_completed": "You've already registered your business.",
+    "personal_info_incomplete": "Complete your personal details first.",
+    "invalid_full_name": "Enter your full name, up to 100 characters.",
+    "invalid_birth_date": "You must be between 16 and 100 years old.",
+    "invalid_business_name": "Enter the business name, up to 120 characters.",
+    "invalid_industry": "Choose an industry from the list.",
+    "invalid_status": "Tell us whether your business already has a physical location.",
+    "business_already_exists": "You already have a registered business.",
+    "auth": {
+      "generic": "We couldn't complete that. Please try again.",
+      "invalid_credentials": "Incorrect email or password.",
+      "user_already_exists": "An account with this email already exists.",
+      "weak_password": "Use at least 8 characters."
+    }
+  }
+}

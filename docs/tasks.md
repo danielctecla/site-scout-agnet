@@ -162,6 +162,8 @@
 
 #### TASK-019: Implement the internationalization foundation
 
+**Status:** Done (2026-11-08). next-intl 4.14 without i18n routing. The root layout reads the language cookie and exports `instant = false` (Cache Components). Verified against the production server: no cookie and invalid values render Spanish, `locale=en` renders English, and `<html lang>` matches. Unit tests cover `isLocale`, the resolver with stubbed stores, the Server Action (cookie attributes, invalid values ignored), key parity and the industry and error keys. Switching language in a browser (refresh, persistence across browser restarts, onboarding state kept) is verified by the TASK-017 end-to-end tests, the first ones that drive a browser.
+
 **Objective:** Provide Spanish and English translations with a browser-local language preference, ready to move to the user's profile later.
 
 **Dependencies:** TASK-002, TASK-020 (the language selector uses the design system).

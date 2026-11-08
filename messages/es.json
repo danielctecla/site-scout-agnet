@@ -1,0 +1,48 @@
+{
+  "common": {
+    "appName": "Business Management",
+    "language": "Idioma",
+    "languages": {
+      "es": "Español",
+      "en": "English"
+    }
+  },
+  "metadata": {
+    "title": "Business Management"
+  },
+  "industries": {
+    "food_beverage": "Alimentos y bebidas",
+    "clothing_accessories": "Ropa y accesorios",
+    "technology_electronics": "Tecnología y electrónica",
+    "beauty_personal_care": "Belleza y cuidado personal",
+    "health": "Salud",
+    "education": "Educación",
+    "professional_services": "Servicios profesionales",
+    "construction_maintenance": "Construcción y mantenimiento",
+    "retail": "Comercio minorista",
+    "other": "Otro"
+  },
+  "status": {
+    "planning": "En planeación",
+    "active": "Activo"
+  },
+  "errors": {
+    "generic": "Algo salió mal. Inténtalo de nuevo.",
+    "not_authenticated": "Tu sesión terminó. Inicia sesión de nuevo.",
+    "profile_not_found": "No encontramos tu perfil. Cierra sesión y vuelve a entrar.",
+    "onboarding_already_completed": "Ya completaste el registro de tu negocio.",
+    "personal_info_incomplete": "Primero completa tus datos personales.",
+    "invalid_full_name": "Escribe tu nombre completo, con 100 caracteres como máximo.",
+    "invalid_birth_date": "Debes tener entre 16 y 100 años.",
+    "invalid_business_name": "Escribe el nombre del negocio, con 120 caracteres como máximo.",
+    "invalid_industry": "Elige una industria de la lista.",
+    "invalid_status": "Indica si tu negocio ya tiene un local físico.",
+    "business_already_exists": "Ya tienes un negocio registrado.",
+    "auth": {
+      "generic": "No pudimos completar la operación. Inténtalo de nuevo.",
+      "invalid_credentials": "Correo o contraseña incorrectos.",
+      "user_already_exists": "Ya existe una cuenta con este correo.",
+      "weak_password": "Usa al menos 8 caracteres."
+    }
+  }
+}

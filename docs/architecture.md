@@ -73,8 +73,8 @@ The Next.js application lives at the repository root, alongside `supabase/`. Fol
 ├── components/
 │   ├── ui/                 # Design system primitives (TASK-020)
 │   └── layout/             # AuthLayout (split screen) and OnboardingLayout (centered)
-├── i18n/                   # Locale configuration, preference stores, resolver, request config (§9) (later)
-├── messages/               # Translation files: es.json (source), en.json (later)
+├── i18n/                   # Locale configuration, preference stores, resolver, request config (§9)
+├── messages/               # Translation files: es.json (source), en.json
 ├── lib/                    # Supabase clients (lib/supabase/), auth helpers, error mapping, shared constants
 ├── proxy.ts                # Session refresh; route protection added in TASK-013
 ├── scripts/                # Development utilities: secret scanner
@@ -98,7 +98,7 @@ The Next.js application lives at the repository root, alongside `supabase/`. Fol
 
 Unit tests are colocated with the code they test (`*.test.ts`).
 
-**Cache Components.** Next.js 16 enables Cache Components by default, and the next major version makes it mandatory, so the application keeps it enabled. Every page depends on request cookies (session and language), which are read at request time. Reading them outside a `<Suspense>` boundary is a build error, unless the segment opts out of prerendering with `export const instant = false`. TASK-004 and TASK-019 choose the pattern for the session and the language.
+**Cache Components.** Next.js 16 enables Cache Components by default, and the next major version makes it mandatory, so the application keeps it enabled. Every page depends on request cookies (session and language), which are read at request time. Reading them outside a `<Suspense>` boundary is a build error, unless the segment opts out of prerendering with `export const instant = false`. Because the language sets `<html lang>` in the root layout and every page is per-user, the root layout exports `instant = false` (TASK-019): every route is rendered on request.
 
 ## 2. Frontend Architecture
 
@@ -402,7 +402,7 @@ The i18n design separates *where the preference is stored* from *how text is tra
 | `i18n/actions.ts` | `setLocalePreference(locale)` Server Action: validates the locale and writes it to every configured store | Also writes the profile |
 | `i18n/request.ts` | next-intl request configuration: calls `resolveLocale()` and loads the messages | No |
 | `messages/es.json`, `messages/en.json` | Translations, organized by namespace | No |
-| Language selector component | Calls `setLocalePreference`, then refreshes the route | No |
+| Language selector component (`components/language-selector.tsx`) | A native dropdown styled as the approved language pill; calls `setLocalePreference`, then refreshes the route | No |
 
 Components, message files and the error-mapping module never read or write the preference directly; they only receive the resolved locale.
 
@@ -429,7 +429,7 @@ Components, message files and the error-mapping module never read or write the p
 
 ### Messages
 
-- Namespaces: `common`, `metadata`, `auth`, `onboarding`, `business`, `dashboard`, `validation`, `errors`, `industries`, `status`.
+- Namespaces: `common`, `metadata`, `auth`, `onboarding`, `business`, `dashboard`, `validation`, `errors`, `industries`, `status`. Screen namespaces (`auth`, `onboarding`, `business`, `dashboard`, `validation`) are added by the task that builds each screen.
 - `es.json` is the source file. `en.json` must contain exactly the same keys; a unit test in CI fails on missing or extra keys. Message key types are derived from `es.json`.
 - Industry display names use `industries.<code>`; status labels use `status.planning` and `status.active`.
 - Database error contract codes use `errors.<code>` (for example `errors.invalid_industry`), plus `errors.generic` for anything outside the contract.
