@@ -110,4 +110,4 @@ Nunca:
 
 ## Documentación
 
-Empieza por [docs/requirements.md](docs/requirements.md) y sigue el plan en [docs/tasks.md](docs/tasks.md).
+Empieza por [docs/requirements.md](docs/requirements.md) y sigue el plan en [docs/tasks/](docs/tasks/) (un archivo por funcionalidad).
