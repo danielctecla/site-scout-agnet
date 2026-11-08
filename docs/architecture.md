@@ -70,7 +70,9 @@ The Next.js application lives at the repository root, alongside `supabase/`. Fol
 ```text
 .
 ├── app/                    # Next.js App Router (see §2)
-├── components/ui/          # Design system primitives (TASK-020) (later)
+├── components/
+│   ├── ui/                 # Design system primitives (TASK-020)
+│   └── layout/             # AuthLayout (split screen) and OnboardingLayout (centered)
 ├── i18n/                   # Locale configuration, preference stores, resolver, request config (§9) (later)
 ├── messages/               # Translation files: es.json (source), en.json (later)
 ├── lib/                    # Supabase clients (lib/supabase/), auth helpers, error mapping, shared constants
@@ -154,9 +156,9 @@ No client uses the service-role key.
 
 ### Visual Design
 
-Approved in TASK-020. Prototype: https://claude.ai/artifact/RxfpnENhy5XESez9CGc5EF. Tokens live in `app/globals.css` (Tailwind theme) and primitives in `components/ui/`.
+Approved in TASK-020. Prototype: https://claude.ai/artifact/RxfpnENhy5XESez9CGc5EF. Tokens live in `app/globals.css` (Tailwind theme; the default palette is removed so only design colors exist), primitives in `components/ui/` and page layouts in `components/layout/`. Components receive all text through props, from the translation files.
 
-- **Authentication pages** (login, register, forgot password, update password): split screen. The form is on the left (40%) over a light grey panel, and a photograph is on the right (60%) with the language selector in its top-right corner. On narrow screens the photograph is hidden and the language selector moves above the form. Photograph: `public/images/auth-map.jpg`, "maps paper on table" by Annie Spratt (Unsplash License).
+- **Authentication pages** (login, register, forgot password, update password): split screen. The form is on the left (40%) over a light grey panel, and a photograph is on the right (60%) with the language selector in its top-right corner. The prototype's floating cards over the photograph are left out, because they would show invented data. On narrow screens the photograph is hidden and the language selector moves above the form. Photograph: `public/images/auth-map.jpg`, "maps paper on table" by Annie Spratt (Unsplash License).
 - **Onboarding**: one centered 440 px column on a white page; step indicator, title and subtitle centered; Back and Finish side by side on Page 2.
 - **Dashboard**: light grey page with a 720 px column and a white business card.
 - **Style**: Inter (self-hosted), medium-weight large titles, near-black primary buttons, 8 px radius on buttons and fields, 12 px on cards, no accent color. Light appearance only.

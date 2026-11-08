@@ -1,28 +1,65 @@
 @import "tailwindcss";
 
-/* Base tokens only. The design system (type scale, color, spacing, motion) is
-   defined before the first UI task. */
-:root {
-  --background: #ffffff;
-  --foreground: #1d1d1f;
+/*
+ * Design tokens (TASK-020; architecture.md §2, Visual Design).
+ * Light appearance only. The default Tailwind palette is removed so that
+ * components can only use these colors.
+ */
+@theme {
+  --color-*: initial;
+  --color-white: #ffffff;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --color-ink: #1a1a1a;
+  --color-ink-hover: #333333;
+  --color-ink-secondary: #3d3d3d;
+  --color-ink-tertiary: #5c5c5c;
+  --color-border: #d9d9d9;
+  --color-divider: #e5e5e5;
+  --color-panel: #f4f4f4;
+  --color-photo: #d6d0c7;
+  --color-error: #c8102e;
+  --color-error-surface: #fdecee;
+  --color-error-ink: #8e0b21;
+  --color-active: #1a7f37;
+  --color-active-surface: #e5f3e9;
+  --color-planning: #8a5a00;
+  --color-planning-surface: #fff1de;
+
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --text-display: 3rem;
+  --text-display--line-height: 1.12;
+  --text-display--letter-spacing: -0.03em;
+  --text-display--font-weight: 500;
+  --text-display-sm: 2.75rem;
+  --text-display-sm--line-height: 1.12;
+  --text-display-sm--letter-spacing: -0.03em;
+  --text-display-sm--font-weight: 500;
+  --text-heading: 1.875rem;
+  --text-heading--line-height: 1.2;
+  --text-heading--letter-spacing: -0.02em;
+  --text-heading--font-weight: 500;
+  --text-lead: 1.1875rem;
+  --text-lead--line-height: 1.5;
+  --text-body: 1.0625rem;
+  --text-body--line-height: 1.45;
+  --text-label: 0.9375rem;
+  --text-label--line-height: 1.35;
+  --text-note: 0.875rem;
+  --text-note--line-height: 1.4;
+  --text-brand: 1.1875rem;
+  --text-brand--line-height: 1.2;
+  --text-brand--letter-spacing: -0.02em;
+  --text-brand--font-weight: 600;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #000000;
-    --foreground: #f5f5f7;
+@layer base {
+  body {
+    background: var(--color-white);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
   }
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
 }

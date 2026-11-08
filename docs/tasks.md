@@ -200,7 +200,7 @@
 
 #### TASK-020: Define the UX and visual design system
 
-**Status:** In progress. Design approved on 2026-11-08 (prototype and summary in `architecture.md` §2, Visual Design): split-screen authentication pages with a map photograph, centered onboarding on white, industry dropdown, date of birth instead of age, light appearance only. Pending: tokens and primitives.
+**Status:** Done (2026-11-08). Design approved (prototype and summary in `architecture.md` §2, Visual Design). Tokens in `app/globals.css` (the default Tailwind palette is removed), Inter self-hosted with `@fontsource-variable/inter`, primitives in `components/ui/` (Button, TextField, SelectField, RadioCards, ProgressSteps, StatusBadge, FormAlert, PageIntro) and layouts in `components/layout/` (AuthLayout, OnboardingLayout). Unit tests cover the accessible names and states. The visual review in Spanish and English happens on the real screens (TASK-011, TASK-014 to TASK-016).
 
 **Objective:** Define the interaction and visual design before any screen is built, so the whole application follows one deliberate system inspired by Apple's onboarding (`requirements.md` NFR-07).
 
@@ -451,6 +451,8 @@ Each task writes its pgTAP tests first. Each migration includes its RLS, policie
 ---
 
 #### TASK-021: Replace age with date of birth
+
+**Status:** Done (2026-11-08). Migration 7 is applied to the project and `supabase migration list` matches; the read-only catalog checks match `database.md` §8; advisors unchanged (only the accepted `finish_onboarding` warning).
 
 **Objective:** Collect the date of birth instead of the age (`requirements.md` FR-06), keeping the 16–100 rule enforced by the database on every write path.
 
