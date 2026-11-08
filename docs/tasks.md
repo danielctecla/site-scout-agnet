@@ -589,6 +589,8 @@ Each task writes its pgTAP tests first. Each migration includes its RLS, policie
 
 #### TASK-014: Implement the personal information page
 
+**Status:** Done (2026-11-08).
+
 **Dependencies:** TASK-013, TASK-021.
 
 **Scope (keep it simple):**
@@ -603,6 +605,8 @@ Each task writes its pgTAP tests first. Each migration includes its RLS, policie
 ---
 
 #### TASK-015: Implement the business information page
+
+**Status:** Done (2026-11-08).
 
 **Dependencies:** TASK-014.
 

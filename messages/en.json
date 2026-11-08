@@ -60,9 +60,31 @@
     }
   },
   "onboarding": {
+    "progress": "Step {current} of {total}",
+    "progressName": "Registration progress",
     "personal": {
       "title": "Tell us about yourself",
-      "subtitle": "We'll use this for your profile. You can't change it after you finish."
+      "subtitle": "We'll use this for your profile. You can't change it after you finish.",
+      "fullName": "Full name",
+      "birthDate": "Date of birth",
+      "birthDateHint": "You must be between 16 and 100 years old.",
+      "next": "Next",
+      "saving": "Saving…"
+    },
+    "business": {
+      "title": "Your business",
+      "subtitle": "You don't need a physical location to register it.",
+      "name": "Business name",
+      "industry": "Industry",
+      "industryPlaceholder": "Select an industry",
+      "establishment": "Does your business already have a physical location?",
+      "yes": "Yes, I have one",
+      "yesHint": "It will be registered as active.",
+      "no": "Not yet",
+      "noHint": "It will be registered as planning.",
+      "back": "Back",
+      "finish": "Finish",
+      "finishing": "Finishing…"
     }
   },
   "dashboard": {
@@ -75,7 +97,15 @@
     "emailRequired": "Enter your email.",
     "emailInvalid": "Enter a valid email, like name@example.com.",
     "passwordRequired": "Enter your password.",
-    "passwordTooShort": "Use at least 8 characters."
+    "passwordTooShort": "Use at least 8 characters.",
+    "fullNameRequired": "Enter your full name.",
+    "fullNameTooLong": "Use at most 100 characters.",
+    "birthDateRequired": "Enter your date of birth.",
+    "birthDateOutOfRange": "You must be between 16 and 100 years old.",
+    "businessNameRequired": "Enter your business name.",
+    "businessNameTooLong": "Use at most 120 characters.",
+    "industryRequired": "Choose an industry.",
+    "establishmentRequired": "Choose an option."
   },
   "industries": {
     "food_beverage": "Food & beverage",

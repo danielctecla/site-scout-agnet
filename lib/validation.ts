@@ -34,3 +34,50 @@ export function validatePassword(
   }
   return undefined;
 }
+
+export function validateFullName(
+  value: string,
+): "validation.fullNameRequired" | "validation.fullNameTooLong" | undefined {
+  const name = value.trim();
+  if (!name) return "validation.fullNameRequired";
+  if (codePointLength(name) > 100) return "validation.fullNameTooLong";
+  return undefined;
+}
+
+// Full years between a YYYY-MM-DD date and today, as the database computes it.
+export function ageOn(birthDate: string, today: Date): number | undefined {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(birthDate);
+  if (!match) return undefined;
+  const [year, month, day] = match.slice(1).map(Number);
+  let age = today.getFullYear() - year;
+  const beforeBirthday =
+    today.getMonth() + 1 < month ||
+    (today.getMonth() + 1 === month && today.getDate() < day);
+  if (beforeBirthday) age -= 1;
+  return age;
+}
+
+export function validateBirthDate(
+  value: string,
+  today = new Date(),
+):
+  | "validation.birthDateRequired"
+  | "validation.birthDateOutOfRange"
+  | undefined {
+  const age = ageOn(value, today);
+  if (age === undefined) return "validation.birthDateRequired";
+  if (age < 16 || age > 100) return "validation.birthDateOutOfRange";
+  return undefined;
+}
+
+export function validateBusinessName(
+  value: string,
+):
+  | "validation.businessNameRequired"
+  | "validation.businessNameTooLong"
+  | undefined {
+  const name = value.trim();
+  if (!name) return "validation.businessNameRequired";
+  if (codePointLength(name) > 120) return "validation.businessNameTooLong";
+  return undefined;
+}

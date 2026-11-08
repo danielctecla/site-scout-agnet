@@ -60,9 +60,31 @@
     }
   },
   "onboarding": {
+    "progress": "Paso {current} de {total}",
+    "progressName": "Progreso del registro",
     "personal": {
       "title": "Cuéntanos sobre ti",
-      "subtitle": "Usaremos estos datos en tu perfil. No podrás cambiarlos después de terminar."
+      "subtitle": "Usaremos estos datos en tu perfil. No podrás cambiarlos después de terminar.",
+      "fullName": "Nombre completo",
+      "birthDate": "Fecha de nacimiento",
+      "birthDateHint": "Debes tener entre 16 y 100 años.",
+      "next": "Siguiente",
+      "saving": "Guardando…"
+    },
+    "business": {
+      "title": "Tu negocio",
+      "subtitle": "No necesitas tener un local para registrarlo.",
+      "name": "Nombre del negocio",
+      "industry": "Industria",
+      "industryPlaceholder": "Selecciona una industria",
+      "establishment": "¿Tu negocio ya tiene un local físico?",
+      "yes": "Sí, ya tengo uno",
+      "yesHint": "Se registrará como activo.",
+      "no": "Todavía no",
+      "noHint": "Se registrará en planeación.",
+      "back": "Atrás",
+      "finish": "Terminar",
+      "finishing": "Terminando…"
     }
   },
   "dashboard": {
@@ -75,7 +97,15 @@
     "emailRequired": "Escribe tu correo electrónico.",
     "emailInvalid": "Escribe un correo válido, como nombre@ejemplo.com.",
     "passwordRequired": "Escribe tu contraseña.",
-    "passwordTooShort": "Usa al menos 8 caracteres."
+    "passwordTooShort": "Usa al menos 8 caracteres.",
+    "fullNameRequired": "Escribe tu nombre completo.",
+    "fullNameTooLong": "Usa como máximo 100 caracteres.",
+    "birthDateRequired": "Indica tu fecha de nacimiento.",
+    "birthDateOutOfRange": "Debes tener entre 16 y 100 años.",
+    "businessNameRequired": "Escribe el nombre de tu negocio.",
+    "businessNameTooLong": "Usa como máximo 120 caracteres.",
+    "industryRequired": "Elige una industria.",
+    "establishmentRequired": "Elige una opción."
   },
   "industries": {
     "food_beverage": "Alimentos y bebidas",

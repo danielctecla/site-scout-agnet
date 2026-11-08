@@ -13,7 +13,15 @@ export function PageIntro({
 }) {
   return (
     <div className={cx("flex flex-col gap-3.5", centered && "text-center")}>
-      <h1 className={centered ? "text-display-sm" : "text-display"}>{title}</h1>
+      <h1
+        tabIndex={-1}
+        className={cx(
+          centered ? "text-display-sm" : "text-display",
+          "outline-none",
+        )}
+      >
+        {title}
+      </h1>
       {description ? (
         <p className="text-lead text-ink-secondary">{description}</p>
       ) : null}
