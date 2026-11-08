@@ -105,6 +105,8 @@ Score = round(100 × Σ weight × value ÷ Σ weight of available factors). A fa
 
 #### TASK-024: DENUE client
 
+**Status:** In progress. Client and parser done (`lib/location/denue.ts`), tested with a fixture in the documented format. Pending: a valid token, then replace the fixture with a real response and confirm the `CLEE` SCIAN position and the response size in a dense area.
+
 **Dependencies:** TASK-023. Needs a DENUE token.
 
 **Scope:** `Buscar` call with timeout; parse each record into an establishment (DENUE ID, name, activity name, SCIAN class from `CLEE`, address, coordinates, staff range); errors for network failure, invalid token and malformed data. Save one real response as a test fixture, without personal contact fields.
@@ -113,6 +115,8 @@ Score = round(100 × Σ weight × value ÷ Σ weight of available factors). A fa
 
 #### TASK-025: Classification, distances and candidate zones
 
+**Status:** Done (2026-11-08). `classification.ts`, `zones.ts`.
+
 **Dependencies:** TASK-024.
 
 **Scope:** industry → SCIAN prefixes (D3), haversine distance, 300 m cells, candidate centers and zone metrics (D4 steps 1–2), "insufficient data" detection.
@@ -120,6 +124,8 @@ Score = round(100 × Σ weight × value ÷ Σ weight of available factors). A fa
 **Tests:** classification per category, distances, candidate generation on a small hand-made dataset.
 
 #### TASK-026: Scoring engine
+
+**Status:** Done (2026-11-08). `scoring.ts`; contributions add up to the score.
 
 **Dependencies:** TASK-025.
 
