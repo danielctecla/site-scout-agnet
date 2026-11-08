@@ -486,7 +486,7 @@ There is exactly one Supabase project. There are no separate development, stagin
 2. Run `supabase db reset` and `supabase test db` on the local test stack until every test passes.
 3. Commit the migration and its tests.
 4. If the Supabase project already holds data, take a database dump with the Supabase CLI and store it outside the repository (it contains user data).
-5. Run `supabase db push --dry-run`, review the pending migrations, then run `supabase db push`.
+5. Run `supabase db push --linked --dry-run`, review the pending migrations, then run `supabase db push --linked`. Always pass `--linked`: the next major CLI version targets the local database by default.
 6. Run `supabase migration list` to confirm the local and remote migration histories match.
 
 Never run `supabase db reset --linked` (it erases the project), change the schema through the dashboard (SQL editor, Table Editor) or other tools, or edit a migration after it has been applied.

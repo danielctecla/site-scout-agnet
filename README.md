@@ -94,7 +94,7 @@ Si `docker` apunta a Docker Desktop y no está abierto, usa el daemon del sistem
 2. `npm run db:reset && npm run db:test` hasta que todo pase.
 3. Haz commit de la migración y sus pruebas.
 4. Si el proyecto ya tiene datos, haz un respaldo con `npx supabase db dump` y guárdalo fuera del repo.
-5. `npx supabase db push --dry-run`, revisa, y luego `npx supabase db push`.
+5. `npx supabase db push --linked --dry-run`, revisa, y luego `npx supabase db push --linked`. Pasa siempre `--linked`: la próxima versión mayor del CLI apuntará a la base local por defecto.
 6. `npx supabase migration list` para confirmar que local y remoto coinciden.
 
 Nunca:

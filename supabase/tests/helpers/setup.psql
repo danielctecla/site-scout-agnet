@@ -12,14 +12,14 @@ create schema tests;
 grant usage on schema tests to anon, authenticated;
 
 -- Creates an auth user the way sign-up does (an insert into auth.users, which
--- fires the auth triggers) and returns its id.
-create function tests.create_user(p_email text)
+-- fires the auth triggers) and returns its id. Pass p_id to use a fixed id.
+create function tests.create_user(p_email text, p_id uuid default null)
 returns uuid
 language plpgsql
 set search_path = ''
 as $$
 declare
-  v_id uuid := gen_random_uuid();
+  v_id uuid := coalesce(p_id, gen_random_uuid());
 begin
   insert into auth.users (
     instance_id, id, aud, role, email, email_confirmed_at,

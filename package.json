@@ -22,6 +22,7 @@
     "db:status": "supabase status",
     "db:reset": "supabase db reset --local",
     "db:test": "supabase test db --local",
+    "db:types": "supabase gen types typescript --local > lib/supabase/database.types.ts",
     "prepare": "git rev-parse --git-dir >/dev/null 2>&1 && git config core.hooksPath .githooks || true"
   },
   "dependencies": {

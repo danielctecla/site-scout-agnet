@@ -142,6 +142,7 @@
 - Add a server helper that returns the current user using `getClaims()` (or `getUser()`), never `getSession()`.
 - Read the Supabase URL and publishable key from `.env.local` (`architecture.md` §11).
 - Add a shared test setup guard that aborts any automated test whose Supabase URL is not the local test stack.
+- Add integration tests against the local test stack: signup through the Auth service creates an empty profile (TASK-006), and two parallel `finish_onboarding` calls create exactly one business while the other receives `onboarding_already_completed` (TASK-009).
 
 **Acceptance criteria:**
 - Browser and server clients connect to the Supabase project configured in `.env.local`; automated tests connect only to the local test stack.
@@ -228,6 +229,8 @@ Each task writes its pgTAP tests first. Each migration includes its RLS, policie
 
 #### TASK-005: Create the updated_at function and the profiles table
 
+**Status:** Done (2026-11-08).
+
 **Objective:** Store personal information with validity and access rules enforced by the database.
 
 **Dependencies:** TASK-003.
@@ -267,6 +270,8 @@ Each task writes its pgTAP tests first. Each migration includes its RLS, policie
 
 #### TASK-006: Create the profile creation trigger
 
+**Status:** Done (2026-11-08). pgTAP cannot assume the Auth service role (`supabase_auth_admin`), so signup through the Auth service is verified by the TASK-004 integration test.
+
 **Objective:** Create a profile automatically when a user registers.
 
 **Dependencies:** TASK-005.
@@ -297,6 +302,8 @@ Each task writes its pgTAP tests first. Each migration includes its RLS, policie
 ---
 
 #### TASK-007: Create the businesses table
+
+**Status:** Done (2026-11-08).
 
 **Objective:** Store one business per user, written only through the controlled onboarding operation.
 
@@ -334,6 +341,8 @@ Each task writes its pgTAP tests first. Each migration includes its RLS, policie
 
 #### TASK-008: Implement save_personal_information
 
+**Status:** Done (2026-11-08).
+
 **Objective:** Save Page 1 through the controlled, normalizing write path.
 
 **Dependencies:** TASK-005.
@@ -365,6 +374,8 @@ Each task writes its pgTAP tests first. Each migration includes its RLS, policie
 ---
 
 #### TASK-009: Implement finish_onboarding
+
+**Status:** Done (2026-11-08). Concurrency was verified with two parallel database sessions (one business; the second call received `onboarding_already_completed`). The automated version is part of the TASK-004 integration tests, which need the Supabase client and the test guard.
 
 **Objective:** Create the business and complete onboarding atomically.
 
@@ -403,6 +414,8 @@ Each task writes its pgTAP tests first. Each migration includes its RLS, policie
 
 #### TASK-010: Verify database security, apply migrations and generate types
 
+**Status:** In progress. The consolidated security suite (`060_security.test.sql`) and the generated types (`lib/supabase/database.types.ts`, `npm run db:types`) are done. Pending: `supabase db push` to the project, `supabase migration list`, and the advisors.
+
 **Objective:** Prove the complete database security model on the local test stack, apply the migrations to the Supabase project and provide typed access for the frontend.
 
 **Dependencies:** TASK-008, TASK-009.
@@ -413,7 +426,7 @@ Each task writes its pgTAP tests first. Each migration includes its RLS, policie
 - Build a consolidated security suite with two users and `anon` across all tables and functions (local test stack).
 - Assert the privilege catalog: `anon` has no table or function privileges; `authenticated` has only the privileges in §8.
 - Assert that only the two documented functions are SECURITY DEFINER and that every function sets `search_path = ''`.
-- Apply the migrations to the Supabase project following the migration workflow: `supabase db push --dry-run`, review, then `supabase db push`.
+- Apply the migrations to the Supabase project following the migration workflow: `supabase db push --linked --dry-run`, review, then `supabase db push --linked`.
 - Confirm with `supabase migration list` that the local and remote histories match.
 - Run the Supabase security and performance advisors on the Supabase project; document accepted warnings.
 - Generate TypeScript types with `supabase gen types typescript --local` and commit them.
