@@ -1,0 +1,6 @@
+# Documentation is edited by hand; keep its formatting as written.
+*.md
+supabase/
+package-lock.json
+.next/
+coverage/
