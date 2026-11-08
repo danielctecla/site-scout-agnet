@@ -159,6 +159,8 @@ Score = round(100 × Σ weight × value ÷ Σ weight of available factors). A fa
 
 #### TASK-029: Evaluation pipeline
 
+**Status:** Done (2026-11-08). `evaluate.ts`, `input.ts` and the `runEvaluation` server action. To measure with real DENUE data: prompt size with a 3 km radius in a dense area.
+
 **Dependencies:** TASK-027, TASK-028.
 
 **Scope:** server action: geocoded input → DENUE → candidates → agent → validation → scoring → save → redirect to results. Errors: DENUE failure, insufficient data, analysis failure; the form keeps its values for a retry.
