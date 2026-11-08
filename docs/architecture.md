@@ -150,7 +150,17 @@ No client uses the service-role key.
 - **`INDUSTRIES`**: industry codes in display order. The only application copy of the code list; the database constraint is authoritative (`database.md` §4). Display names come from translation messages (`industries.<code>`).
 - **`statusFromEstablishment`**: the only mapping from the establishment answer to `planning` or `active`.
 - **Error mapping**: translates database error contract codes (`database.md` §7.5) and Supabase Auth error codes into translation keys (§9). It is language-independent; anything it does not recognize maps to a generic message key.
-- **Validation helpers**: trimming, length counted in Unicode code points (to match PostgreSQL `char_length`, unlike JavaScript `String.length`), and age as a whole number in 16–100. They return translation keys, not text.
+- **Validation helpers**: trimming, length counted in Unicode code points (to match PostgreSQL `char_length`, unlike JavaScript `String.length`), and the date of birth as a valid date giving an age of 16–100 years today (full years, as computed by the database). They return translation keys, not text.
+
+### Visual Design
+
+Approved in TASK-020. Prototype: https://claude.ai/artifact/RxfpnENhy5XESez9CGc5EF. Tokens live in `app/globals.css` (Tailwind theme) and primitives in `components/ui/`.
+
+- **Authentication pages** (login, register, forgot password, update password): split screen. The form is on the left (40%) over a light grey panel, and a photograph is on the right (60%) with the language selector in its top-right corner. On narrow screens the photograph is hidden and the language selector moves above the form. Photograph: `public/images/auth-map.jpg`, "maps paper on table" by Annie Spratt (Unsplash License).
+- **Onboarding**: one centered 440 px column on a white page; step indicator, title and subtitle centered; Back and Finish side by side on Page 2.
+- **Dashboard**: light grey page with a 720 px column and a white business card.
+- **Style**: Inter (self-hosted), medium-weight large titles, near-black primary buttons, 8 px radius on buttons and fields, 12 px on cards, no accent color. Light appearance only.
+- **Fields**: the industry is a dropdown (native `<select>`); the date of birth is a native date input.
 
 ## 3. Authentication Architecture
 
@@ -253,11 +263,11 @@ Physical location information is not collected during the MVP onboarding process
 
 ### Personal Information Persistence
 
-When the user clicks Next, Next.js calls `save_personal_information(p_full_name, p_age)`. This is the only way the application writes personal information.
+When the user clicks Next, Next.js calls `save_personal_information(p_full_name, p_birth_date)`. This is the only way the application writes personal information.
 
 The function identifies the user through `auth.uid()`, trims the name, rejects changes after onboarding completion and translates constraint violations into the error contract.
 
-Because the function runs with the caller's privileges, authenticated users also hold UPDATE privilege on `profiles.full_name` and `profiles.age`. The application never uses direct updates. Direct updates are bound by the same constraints, column grants and RLS policy, but receive no trimming and no contract error codes (`database.md` §7.2).
+Because the function runs with the caller's privileges, authenticated users also hold UPDATE privilege on `profiles.full_name` and `profiles.birth_date`. The application never uses direct updates. Direct updates are bound by the same constraints, column grants and RLS policy, but receive no trimming and no contract error codes (`database.md` §7.2).
 
 The onboarding completion timestamp cannot be modified through either path.
 
@@ -291,13 +301,13 @@ PostgreSQL Row Level Security (RLS) and explicit privileges will protect user-ow
 
 - Supabase's default privileges grant broad table and function access to `anon` and `authenticated`. Every migration revokes them and grants only what is needed (`database.md` §8).
 - `anon`: no access to application tables or functions.
-- `authenticated`: read own rows; update `full_name` and `age` on their own profile before onboarding completion; execute the two RPC functions.
+- `authenticated`: read own rows; update `full_name` and `birth_date` on their own profile before onboarding completion; execute the two RPC functions.
 - RLS, policies and privileges are created in the same migration as the table or function they protect.
 
 ### Profiles
 
 - Authenticated users can read their own profile.
-- Authenticated users can update only their full name and age, only on their own profile, and only before onboarding is completed.
+- Authenticated users can update only their full name and date of birth, only on their own profile, and only before onboarding is completed.
 - Users cannot access or modify another user's profile.
 - Users cannot insert or delete profiles, or modify `onboarding_completed_at`.
 
@@ -340,8 +350,8 @@ Onboarding is a single `/onboarding` route with two steps held in client state. 
 ### Page 1 — Personal Information
 
 1. The server loads the user's profile and the form is pre-populated with saved values.
-2. User enters full name and age.
-3. Frontend validates: trimmed full name of 1–100 characters; age a whole number from 16 to 100.
+2. User enters full name and date of birth.
+3. Frontend validates: trimmed full name of 1–100 characters; a date of birth giving an age of 16–100 years today.
 4. User clicks Next; Next.js calls `save_personal_information`.
 5. On success, the user proceeds to Page 2. On error, the mapped message is displayed and the user stays on Page 1.
 
@@ -569,9 +579,9 @@ Locally, `npm run check` runs the same checks as the checks job, and `npm run db
 
 ## 13. Open Decisions
 
-1. Design direction (type, color, motion, screen layouts): proposed in TASK-020 as a visual prototype, pending approval. Already decided: onboarding keeps two steps (`specification.md`), and the interface is light only.
+None.
 
-Resolved in this version: session expiration uses Supabase defaults (1-hour access tokens with automatic refresh and refresh token rotation); the Supabase CLI local stack in Docker is the ephemeral test harness; GitHub Actions runs checks only, plus a local pre-commit secret scan; the built-in email service with Supabase's default templates is accepted (no custom SMTP or custom templates; recovery uses the PKCE code exchange); Tailwind CSS for styling; Cache Components stays enabled.
+Resolved in this version: the design direction was approved (§2, Visual Design); session expiration uses Supabase defaults (1-hour access tokens with automatic refresh and refresh token rotation); the Supabase CLI local stack in Docker is the ephemeral test harness; GitHub Actions runs checks only, plus a local pre-commit secret scan; the built-in email service with Supabase's default templates is accepted (no custom SMTP or custom templates; recovery uses the PKCE code exchange); Tailwind CSS for styling; Cache Components stays enabled.
 
 Resolved previously: no application hosting or deployment (Next.js runs locally); a single Supabase project as the only backend environment; UI language (§9); industry categories (`database.md` §4); password minimum length (8); business status changes and business editing after onboarding (out of scope).
 

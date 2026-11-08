@@ -7,7 +7,7 @@
 --   4  businesses_user_id_fkey ..................... 030 (orphan business)
 --   5  ON DELETE CASCADE ........................... 010, 020, 030
 --   6  profiles_full_name_check .................... 010, 040
---   7  profiles_age_check .......................... 010, 040
+--   7  profiles_validate_birth_date trigger ........ 010, 040
 --   8  profiles_completion_requires_personal_info .. 010, 050 (personal_info_incomplete)
 --   9  businesses_name_check ....................... 030, 050
 --   10 businesses_industry_check ................... 030, 050
@@ -26,10 +26,10 @@ select plan(26);
 select tests.create_user('ana@example.com', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');
 select tests.create_user('ben@example.com', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');
 select tests.authenticate_as('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');
-select public.save_personal_information('Ana', 30);
+select public.save_personal_information('Ana', '1990-05-14');
 select public.finish_onboarding('Café Ana', 'food_beverage', 'planning');
 select tests.authenticate_as('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');
-select public.save_personal_information('Ben', 40);
+select public.save_personal_information('Ben', '1986-02-01');
 select tests.clear_authentication();
 
 -- ---------------------------------------------------------------------------
@@ -37,7 +37,7 @@ select tests.clear_authentication();
 -- ---------------------------------------------------------------------------
 select tables_are('public', array['businesses', 'profiles'], 'public contains only the application tables');
 select functions_are('public',
-  array['finish_onboarding', 'handle_new_user', 'handle_updated_at', 'save_personal_information'],
+  array['finish_onboarding', 'handle_new_user', 'handle_updated_at', 'save_personal_information', 'validate_profile_birth_date'],
   'public contains only the documented functions');
 
 select is_empty($$
@@ -76,8 +76,8 @@ select results_eq($$
   where c.relnamespace = 'public'::regnamespace and c.relkind = 'r'
     and has_column_privilege('authenticated', c.oid, a.attnum, p.priv)
   order by 1, 2, 3
-$$, $$values ('profiles', 'age', 'UPDATE'), ('profiles', 'full_name', 'UPDATE')$$,
-  'authenticated can write only profiles.full_name and profiles.age');
+$$, $$values ('profiles', 'birth_date', 'UPDATE'), ('profiles', 'full_name', 'UPDATE')$$,
+  'authenticated can write only profiles.full_name and profiles.birth_date');
 select results_eq($$
   select p.proname::text collate "default" from pg_proc p
   where p.pronamespace = 'public'::regnamespace and has_function_privilege('authenticated', p.oid, 'EXECUTE')
@@ -124,7 +124,7 @@ select throws_ok('select * from public.businesses', '42501', null, 'anon cannot 
 select throws_ok($$update public.profiles set full_name = 'x'$$, '42501', null, 'anon cannot update profiles');
 select throws_ok($$insert into public.businesses (user_id, name, industry, status)
   values ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'x', 'retail', 'active')$$, '42501', null, 'anon cannot insert businesses');
-select throws_ok($$select public.save_personal_information('x', 30)$$, '42501', null, 'anon cannot call save_personal_information');
+select throws_ok($$select public.save_personal_information('x', '1990-05-14')$$, '42501', null, 'anon cannot call save_personal_information');
 select throws_ok($$select public.finish_onboarding('x', 'retail', 'active')$$, '42501', null, 'anon cannot call finish_onboarding');
 
 -- ---------------------------------------------------------------------------

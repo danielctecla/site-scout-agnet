@@ -1,6 +1,6 @@
 # Requirements — Business Management Application
 
-**Version:** 0.7  
+**Version:** 0.8  
 **Status:** Updated  
 **Last updated:** 2026-11-08  
 **Scope:** Authentication and Business Onboarding MVP
@@ -62,13 +62,13 @@ A business does not need to have a physical establishment to be registered. User
 The first onboarding page must collect:
 
 - Full name.
-- Age.
+- Date of birth.
 
 Requirements:
 
 - Both fields are mandatory.
 - Full name must contain 1–100 characters after removing leading and trailing whitespace.
-- Age must be a whole number between 16 and 100, inclusive.
+- The date of birth must correspond to an age between 16 and 100 years, inclusive, on the day it is saved.
 - Personal information must be stored trimmed (without leading or trailing whitespace).
 - Personal information must be saved when the user clicks Next.
 - Saved information must be restored when the user returns to onboarding.
@@ -86,7 +86,7 @@ Requirements:
 
 - All three fields are mandatory.
 - Business name must contain 1–120 characters after removing leading and trailing whitespace, and must be stored trimmed.
-- Business industry must be selected from the predefined categories (defined in `database.md` §4).
+- Business industry must be selected from the predefined categories (defined in `database.md` §4), using a dropdown.
 - The user must explicitly answer whether a physical establishment already exists; no answer is preselected.
 - If the user has an establishment, the business is created with status `active`.
 - If the user does not have an establishment, the business is created with status `planning`.

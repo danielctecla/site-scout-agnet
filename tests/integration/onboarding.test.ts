@@ -27,7 +27,7 @@ describe("signup through the Auth service (TASK-006)", () => {
       expect.objectContaining({
         id: userId,
         full_name: null,
-        age: null,
+        birth_date: null,
         onboarding_completed_at: null,
       }),
     ]);
@@ -54,7 +54,7 @@ describe("finish_onboarding concurrency (TASK-009)", () => {
     const { client } = await signUp();
     const saved = await client.rpc("save_personal_information", {
       p_full_name: "Parallel",
-      p_age: 30,
+      p_birth_date: "1990-05-14",
     });
     expect(saved.error).toBeNull();
 

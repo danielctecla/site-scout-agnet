@@ -108,7 +108,7 @@ The recovery link goes through Supabase, which redirects to `http://localhost:30
 **Given** an authenticated user with incomplete onboarding  
 **When** they access `/onboarding`  
 **Then** the system displays Page 1, the first of two steps on the same route  
-**And** requests full name and age  
+**And** requests full name and date of birth  
 **And** pre-populates any previously saved values.
 
 Onboarding always starts at Page 1, including after a page refresh while on Page 2.
@@ -119,7 +119,7 @@ Onboarding always starts at Page 1, including after a page refresh while on Page
 **When** they submit:
 
 - a full name that is empty, whitespace-only, or longer than 100 characters after trimming, or
-- an age that is missing, not a whole number, or outside the range 16–100 (inclusive)
+- a date of birth that is missing, not a valid date, or that gives an age outside 16–100 years (inclusive) on the current day
 
 **Then** the system rejects the submission  
 **And** displays the corresponding validation error  
@@ -129,7 +129,7 @@ Onboarding always starts at Page 1, including after a page refresh while on Page
 
 **Given** valid personal information  
 **When** the user clicks Next  
-**Then** the system stores the trimmed full name and the age in the user's profile  
+**Then** the system stores the trimmed full name and the date of birth in the user's profile  
 **And** displays Page 2.
 
 ### SPEC-ONB-04 — Restore Personal Information
@@ -141,7 +141,7 @@ Onboarding always starts at Page 1, including after a page refresh while on Page
 ### SPEC-ONB-08 — Personal Information Locked After Completion
 
 **Given** an authenticated user whose onboarding is complete  
-**When** they attempt to modify their full name or age through any client path  
+**When** they attempt to modify their full name or date of birth through any client path  
 **Then** the change is rejected or has no effect  
 **And** the stored personal information remains unchanged.
 

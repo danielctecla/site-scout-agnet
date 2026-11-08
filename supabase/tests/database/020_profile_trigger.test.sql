@@ -33,7 +33,7 @@ select tests.create_user('ana@example.com', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa
 select is((select count(*)::integer from public.profiles where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'), 1,
   'registering creates exactly one profile with the auth user id');
 select is(
-  (select array[full_name, age::text, onboarding_completed_at::text] from public.profiles where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
+  (select array[full_name, birth_date::text, onboarding_completed_at::text] from public.profiles where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
   array[null, null, null]::text[],
   'the new profile has no personal information and incomplete onboarding'
 );
@@ -43,9 +43,9 @@ select throws_ok($$insert into public.profiles (id) values ('aaaaaaaa-aaaa-4aaa-
 -- User metadata is client-controlled and must be ignored.
 insert into auth.users (instance_id, id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
 values ('00000000-0000-0000-0000-000000000000', 'cccccccc-cccc-4ccc-8ccc-cccccccccccc', 'authenticated', 'authenticated',
-  'mallory@example.com', '{}', '{"full_name": "Mallory", "age": 40, "onboarding_completed_at": "2020-01-01"}', now(), now());
+  'mallory@example.com', '{}', '{"full_name": "Mallory", "birth_date": "1980-01-01", "onboarding_completed_at": "2020-01-01"}', now(), now());
 select is(
-  (select array[full_name, age::text, onboarding_completed_at::text] from public.profiles where id = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc'),
+  (select array[full_name, birth_date::text, onboarding_completed_at::text] from public.profiles where id = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc'),
   array[null, null, null]::text[],
   'user metadata is not copied into the profile'
 );

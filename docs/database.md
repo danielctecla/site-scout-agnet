@@ -1,8 +1,8 @@
 # Database Design — Business Management MVP
 
-**Version:** 0.6  
+**Version:** 0.7  
 **Status:** Defined  
-**Last updated:** 2026-11-07  
+**Last updated:** 2026-11-08  
 **Database:** Supabase PostgreSQL
 
 ## 1. Overview
@@ -59,7 +59,7 @@ Stores personal information and onboarding progress.
 |---|---|---|---|
 | `id` | UUID | NO | none (equals `auth.users.id`) |
 | `full_name` | TEXT | YES | NULL |
-| `age` | INTEGER | YES | NULL |
+| `birth_date` | DATE | YES | NULL |
 | `onboarding_completed_at` | TIMESTAMPTZ | YES | NULL |
 | `created_at` | TIMESTAMPTZ | NO | `now()` |
 | `updated_at` | TIMESTAMPTZ | NO | `now()` |
@@ -74,23 +74,22 @@ constraint profiles_full_name_check check (
   full_name is null
   or (char_length(full_name) between 1 and 100 and full_name !~ '^\s|\s$')
 ),
-constraint profiles_age_check check (
-  age is null or age between 16 and 100
-),
 constraint profiles_completion_requires_personal_info check (
   onboarding_completed_at is null
-  or (full_name is not null and age is not null)
+  or (full_name is not null and birth_date is not null)
 )
 ```
 
 Rules:
 
 - `id` is the same UUID as the corresponding `auth.users.id`.
-- `full_name` and `age` are NULL until Page 1 is saved, because the profile is created at registration.
-- When present, `full_name` is trimmed and has 1–100 characters, and `age` is between 16 and 100.
-- A profile with `onboarding_completed_at` set always has `full_name` and `age`.
+- `full_name` and `birth_date` are NULL until Page 1 is saved, because the profile is created at registration.
+- When present, `full_name` is trimmed and has 1–100 characters.
+- A `birth_date` written by an update must give an age between 16 and 100 full years on the day it is written (`profiles_validate_birth_date`, §6.3). This rule depends on the current date, so it cannot be a CHECK constraint: PostgreSQL requires CHECK expressions to be immutable, and a time-dependent one could make restoring a backup fail years later.
+- A profile with `onboarding_completed_at` set always has `full_name` and `birth_date`.
 - `onboarding_completed_at` remains NULL until the business is created, and is written only by `finish_onboarding`.
-- `full_name` and `age` cannot change after onboarding is completed (RLS, §8.2).
+- `full_name` and `birth_date` cannot change after onboarding is completed (RLS, §8.2).
+- The column replaced `age` (integer) in migration 7 (§10).
 
 ### 3.2. businesses
 
@@ -187,7 +186,7 @@ The database enforces the following rules independently of frontend validation:
 | 4 | A business references an existing profile | `businesses_user_id_fkey` |
 | 5 | Deleting an Auth user deletes its profile and business | `ON DELETE CASCADE` on both foreign keys |
 | 6 | Full name, when present, is trimmed and has 1–100 characters | `profiles_full_name_check` |
-| 7 | Age, when present, is between 16 and 100 | `profiles_age_check` |
+| 7 | A date of birth, when written, gives an age between 16 and 100 on that day | Trigger `profiles_validate_birth_date` (§6.3) |
 | 8 | Completed onboarding requires personal information | `profiles_completion_requires_personal_info` |
 | 9 | Business name is trimmed and has 1–120 characters | `businesses_name_check` |
 | 10 | Industry is a supported category | `businesses_industry_check` |
@@ -208,7 +207,7 @@ The database enforces the following rules independently of frontend validation:
 Execution:
 
 - Runs AFTER INSERT on `auth.users`, FOR EACH ROW.
-- Inserts a row into `public.profiles` with `id = NEW.id`; all other columns take their defaults (`full_name`, `age` and `onboarding_completed_at` are NULL).
+- Inserts a row into `public.profiles` with `id = NEW.id`; all other columns take their defaults (`full_name`, `birth_date` and `onboarding_completed_at` are NULL).
 - Does not read user metadata or any other client-controlled data.
 - Runs inside the signup transaction: if it fails, the signup fails. No Auth user can exist without a profile.
 - SECURITY DEFINER: exception 1, requirements in §8.5.
@@ -239,6 +238,19 @@ Notes:
 - `businesses` has no update path in the MVP; its trigger is tested with a privileged role.
 - `now()` returns the transaction start time, so the business `created_at`, `onboarding_completed_at` and the profile `updated_at` written by `finish_onboarding` share the same timestamp.
 
+### 6.3. Date of birth validation trigger
+
+**Function:** `public.validate_profile_birth_date()`  
+**Trigger:** `profiles_validate_birth_date`
+
+Execution:
+
+- Runs BEFORE UPDATE OF `birth_date` on `public.profiles`, FOR EACH ROW, only when the new value is not NULL and differs from the old one.
+- Computes the age in full years on the current day (`extract(year from age(current_date, new.birth_date))`) and rejects anything outside 16–100.
+- Raises `check_violation` (`23514`) with the constraint name `profiles_birth_date_age_range`, so it is translated like a constraint violation (§7.5). There is no CHECK constraint with that name.
+- Fires on updates only, never on inserts: profiles are inserted with NULL personal information, and restoring a backup (which inserts rows) never re-evaluates past dates against the current day.
+- SECURITY INVOKER, with `search_path = ''`; EXECUTE revoked.
+
 ## 7. Database functions
 
 Database functions centralize operations that need identity checks, normalization or multiple coordinated writes.
@@ -261,11 +273,11 @@ Three paths can write to `profiles`. The invariants hold on all of them because 
 | Aspect | A. `save_personal_information` (RPC) | B. Direct `UPDATE` (Data API) | C. Privileged functions |
 |---|---|---|---|
 | Used by the application | Yes: the only path for Page 1 | No | Yes, internally |
-| Why it exists | Saves Page 1 | Side effect of Path A being SECURITY INVOKER: the caller must hold UPDATE on `full_name` and `age` | `handle_new_user` creates the row; `finish_onboarding` sets `onboarding_completed_at` |
-| Writable columns | `full_name`, `age` | `full_name`, `age` (column grants) | `id` (insert); `onboarding_completed_at` |
+| Why it exists | Saves Page 1 | Side effect of Path A being SECURITY INVOKER: the caller must hold UPDATE on `full_name` and `birth_date` | `handle_new_user` creates the row; `finish_onboarding` sets `onboarding_completed_at` |
+| Writable columns | `full_name`, `birth_date` | `full_name`, `birth_date` (column grants) | `id` (insert); `onboarding_completed_at` |
 | Rows | Caller's own, onboarding incomplete (RLS) | Caller's own, onboarding incomplete (RLS) | Owner privileges; restricted explicitly to `NEW.id` or `auth.uid()` |
 | Trimming | Trims inputs before writing | None: untrimmed values are rejected by CHECK | `finish_onboarding` trims the business name |
-| Missing values | NULL input raises `invalid_full_name` or `invalid_age` | Can set NULL before completion; `finish_onboarding` then raises `personal_info_incomplete` | Not applicable |
+| Missing values | NULL input raises `invalid_full_name` or `invalid_birth_date` | Can set NULL before completion; `finish_onboarding` then raises `personal_info_incomplete` | Not applicable |
 | After completion | Raises `onboarding_already_completed` | Updates 0 rows, without error | Not applicable |
 | Errors | Contract codes (§7.5) | Raw PostgreSQL errors (for example `23514`, `42501`); not part of the contract | Contract codes (`finish_onboarding`) |
 
@@ -275,23 +287,23 @@ Application code must use Path A only. Database tests exercise Path B to prove t
 
 **Purpose:** Save the personal information entered on onboarding Page 1.
 
-**Signature:** `public.save_personal_information(p_full_name text, p_age integer) returns void`  
+**Signature:** `public.save_personal_information(p_full_name text, p_birth_date date) returns void`  
 **Mode:** SECURITY INVOKER (runs with the caller's privileges and RLS).
 
 Behavior:
 
 1. `v_uid := auth.uid()`. If NULL, raise `not_authenticated`.
-2. If `p_full_name` is NULL, raise `invalid_full_name`. If `p_age` is NULL, raise `invalid_age`.
+2. If `p_full_name` is NULL, raise `invalid_full_name`. If `p_birth_date` is NULL, raise `invalid_birth_date`.
 3. `v_full_name := regexp_replace(p_full_name, '^\s+|\s+$', '', 'g')`.
 4. Read `onboarding_completed_at` from `public.profiles` where `id = v_uid`. If there is no row, raise `profile_not_found`. If it is not NULL, raise `onboarding_already_completed`. (The SELECT policy has no completion condition, so the row stays visible after completion.)
-5. `update public.profiles set full_name = v_full_name, age = p_age where id = v_uid`. Violations of `profiles_full_name_check` or `profiles_age_check` are translated into `invalid_full_name` or `invalid_age`.
+5. `update public.profiles set full_name = v_full_name, birth_date = p_birth_date where id = v_uid`. Violations of `profiles_full_name_check` or `profiles_birth_date_age_range` (§6.3) are translated into `invalid_full_name` or `invalid_birth_date`.
 6. If no row was updated (onboarding was completed concurrently and RLS filtered the row), raise `onboarding_already_completed`.
 
 Notes:
 
 - The function never modifies `onboarding_completed_at`; the caller has no privilege to do so.
 - Repeating the call with the same input produces the same state.
-- Argument type errors (for example, a non-integer age) are rejected by PostgreSQL or PostgREST before the function body runs. They are outside the contract; the frontend prevents them.
+- Argument type errors (for example, an invalid date) are rejected by PostgreSQL or PostgREST before the function body runs. They are outside the contract; the frontend prevents them.
 
 Security:
 
@@ -317,9 +329,9 @@ Behavior:
 1. `v_uid := auth.uid()`. If NULL, raise `not_authenticated`.
 2. Missing arguments: a NULL `p_business_name` raises `invalid_business_name`, a NULL `p_industry` raises `invalid_industry`, a NULL `p_status` raises `invalid_status`.
 3. `v_name := regexp_replace(p_business_name, '^\s+|\s+$', '', 'g')`.
-4. `select full_name, age, onboarding_completed_at from public.profiles where id = v_uid for update`, which locks the row and serializes concurrent completions. If there is no row, raise `profile_not_found`.
+4. `select full_name, birth_date, onboarding_completed_at from public.profiles where id = v_uid for update`, which locks the row and serializes concurrent completions. If there is no row, raise `profile_not_found`.
 5. If `onboarding_completed_at` is not NULL, raise `onboarding_already_completed`.
-6. If `full_name` or `age` is NULL, raise `personal_info_incomplete`.
+6. If `full_name` or `birth_date` is NULL, raise `personal_info_incomplete`.
 7. `insert into public.businesses (user_id, name, industry, status) values (v_uid, v_name, p_industry, p_status) returning id`. Constraint violations are translated (§7.5).
 8. `update public.profiles set onboarding_completed_at = now() where id = v_uid`.
 9. Return the business ID.
@@ -356,7 +368,7 @@ PostgREST responds with HTTP 400 and a body containing `"code": "P0001"` and `"m
 | `onboarding_already_completed` | both | Onboarding is already complete; for `finish_onboarding`, the frontend treats it as success |
 | `personal_info_incomplete` | `finish_onboarding` | Page 1 has not been saved |
 | `invalid_full_name` | `save_personal_information` | Missing, blank, or longer than 100 characters after trimming |
-| `invalid_age` | `save_personal_information` | Missing or outside 16–100 |
+| `invalid_birth_date` | `save_personal_information` | Missing, or gives an age outside 16–100 on the current day |
 | `invalid_business_name` | `finish_onboarding` | Missing, blank, or longer than 120 characters after trimming |
 | `invalid_industry` | `finish_onboarding` | Missing or not a supported category |
 | `invalid_status` | `finish_onboarding` | Missing, or not `planning` or `active` |
@@ -369,7 +381,7 @@ Requests from `anon` never reach a function body: EXECUTE is revoked, and PostgR
 | Constraint | SQLSTATE | Contract code |
 |---|---|---|
 | `profiles_full_name_check` | `23514` | `invalid_full_name` |
-| `profiles_age_check` | `23514` | `invalid_age` |
+| `profiles_birth_date_age_range` (raised by the §6.3 trigger) | `23514` | `invalid_birth_date` |
 | `businesses_name_check` | `23514` | `invalid_business_name` |
 | `businesses_industry_check` | `23514` | `invalid_industry` |
 | `businesses_status_check` | `23514` | `invalid_status` |
@@ -425,7 +437,7 @@ alter table public.profiles enable row level security;
 
 revoke all on table public.profiles from anon, authenticated;
 grant select on table public.profiles to authenticated;
-grant update (full_name, age) on table public.profiles to authenticated;
+grant update (full_name, birth_date) on table public.profiles to authenticated;
 
 create policy profiles_select_own on public.profiles
   for select to authenticated
@@ -463,17 +475,19 @@ create policy businesses_select_own on public.businesses
 |---|---|---|
 | `public.handle_updated_at()` | INVOKER | Nobody (trigger only) |
 | `public.handle_new_user()` | DEFINER | Nobody (trigger only) |
-| `public.save_personal_information(text, integer)` | INVOKER | `authenticated` |
+| `public.validate_profile_birth_date()` | INVOKER | Nobody (trigger only) |
+| `public.save_personal_information(text, date)` | INVOKER | `authenticated` |
 | `public.finish_onboarding(text, text, text)` | DEFINER | `authenticated` |
 
 ```sql
 -- Trigger functions
 revoke execute on function public.handle_updated_at() from public, anon, authenticated;
 revoke execute on function public.handle_new_user() from public, anon, authenticated;
+revoke execute on function public.validate_profile_birth_date() from public, anon, authenticated;
 
 -- RPC functions
-revoke execute on function public.save_personal_information(text, integer) from public, anon;
-grant execute on function public.save_personal_information(text, integer) to authenticated;
+revoke execute on function public.save_personal_information(text, date) from public, anon;
+grant execute on function public.save_personal_information(text, date) to authenticated;
 
 revoke execute on function public.finish_onboarding(text, text, text) from public, anon;
 grant execute on function public.finish_onboarding(text, text, text) to authenticated;
@@ -555,6 +569,7 @@ Order:
 | 4 | `create_businesses` | Table, constraints, unique key, cascading FK, `businesses_set_updated_at`, RLS, policy, grants |
 | 5 | `create_save_personal_information` | Function, EXECUTE privileges |
 | 6 | `create_finish_onboarding` | Function, EXECUTE privileges |
+| 7 | `replace_age_with_birth_date` | Replaces `profiles.age` with `birth_date` (column grant, completion constraint, §6.3 trigger); recreates `save_personal_information(text, date)` and updates `finish_onboarding` |
 
 After the migrations are applied, TypeScript types are generated with `supabase gen types typescript`.
 
@@ -583,7 +598,7 @@ The database design is considered implemented when:
 - [ ] Registration automatically creates a profile, and existing Auth users are backfilled.
 - [ ] A profile can exist with incomplete personal information.
 - [ ] Full names and business names are always stored trimmed, on every write path.
-- [ ] Personal information accepts only valid full names (1–100 characters) and ages (16–100).
+- [ ] Personal information accepts only valid full names (1–100 characters) and dates of birth giving an age of 16–100.
 - [ ] Personal information cannot be modified after onboarding is completed.
 - [ ] A completed profile always has personal information.
 - [ ] A user can have at most one business.

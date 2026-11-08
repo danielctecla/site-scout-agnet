@@ -1,9 +1,9 @@
 # Tasks — Business Management MVP
 
-**Version:** 0.5  
+**Version:** 0.6  
 **Status:** In progress  
 **Last updated:** 2026-11-08  
-**Based on:** requirements.md v0.7, specification.md v0.5, architecture.md v0.6, database.md v0.6
+**Based on:** requirements.md v0.8, specification.md v0.5, architecture.md v0.6, database.md v0.7
 
 ## 1. Development principles
 
@@ -18,7 +18,7 @@
 - Automated tests run only against the ephemeral local test stack, never against the Supabase project.
 - Prefer Supabase Auth and PostgreSQL capabilities over unnecessary custom backend code.
 - Document precedence: `database.md` is authoritative for schema, constraints, functions, RLS and privileges; `specification.md` for observable behavior; `architecture.md` for components and flows; `requirements.md` for scope. If a task reveals a conflict between documents, stop and update the documents before implementing.
-- Task IDs are stable identifiers, not an execution order. Follow the dependency summary (§3). TASK-019 (added in v0.3) and TASK-020 (added in v0.5) belong to Phase 1.
+- Task IDs are stable identifiers, not an execution order. Follow the dependency summary (§3). TASK-019 (added in v0.3) and TASK-020 (added in v0.5) belong to Phase 1; TASK-021 (added in v0.6) belongs to Phase 2.
 - All user-facing text comes from translation files (`architecture.md` §9); every UI task covers both Spanish and English.
 - Every UI task follows the approved design system (TASK-020, `requirements.md` NFR-07). Components use its tokens and primitives, never ad-hoc colors, spacing or type sizes.
 
@@ -200,7 +200,7 @@
 
 #### TASK-020: Define the UX and visual design system
 
-**Status:** In progress. Decided: onboarding keeps two steps; light appearance only. The design direction is proposed as a visual prototype (login, register with an error, onboarding steps 1 and 2, dashboard, foundations) and awaits approval.
+**Status:** In progress. Design approved on 2026-11-08 (prototype and summary in `architecture.md` §2, Visual Design): split-screen authentication pages with a map photograph, centered onboarding on white, industry dropdown, date of birth instead of age, light appearance only. Pending: tokens and primitives.
 
 **Objective:** Define the interaction and visual design before any screen is built, so the whole application follows one deliberate system inspired by Apple's onboarding (`requirements.md` NFR-07).
 
@@ -233,7 +233,7 @@ Each task writes its pgTAP tests first. Each migration includes its RLS, policie
 
 #### TASK-005: Create the updated_at function and the profiles table
 
-**Status:** Done (2026-11-08).
+**Status:** Done (2026-11-08). The `age` column, `profiles_age_check` and `invalid_age` were later replaced by the date of birth (TASK-021).
 
 **Objective:** Store personal information with validity and access rules enforced by the database.
 
@@ -345,7 +345,7 @@ Each task writes its pgTAP tests first. Each migration includes its RLS, policie
 
 #### TASK-008: Implement save_personal_information
 
-**Status:** Done (2026-11-08).
+**Status:** Done (2026-11-08). The `age` column, `profiles_age_check` and `invalid_age` were later replaced by the date of birth (TASK-021).
 
 **Objective:** Save Page 1 through the controlled, normalizing write path.
 
@@ -447,6 +447,27 @@ Each task writes its pgTAP tests first. Each migration includes its RLS, policie
 - Execute SELECT, INSERT, UPDATE and DELETE as two different users and as `anon`.
 - Verify function permissions and that functions act only on the authenticated identity.
 - Verify every row of the `database.md` §5 enforcement table is covered by at least one test.
+
+---
+
+#### TASK-021: Replace age with date of birth
+
+**Objective:** Collect the date of birth instead of the age (`requirements.md` FR-06), keeping the 16–100 rule enforced by the database on every write path.
+
+**Dependencies:** TASK-010.
+
+**References:** `database.md` §3.1, §5, §6.3, §7.2–§7.5, §8.2, §8.4, §10 (migration 7).
+
+**Activities:**
+- Update the pgTAP tests first (TASK-005, TASK-008, TASK-009 and TASK-010 suites) for `birth_date`, the §6.3 trigger and `invalid_birth_date`.
+- Migration `replace_age_with_birth_date`: add `birth_date`, replace the completion constraint, drop `age` (and with it `profiles_age_check` and its column grant), grant UPDATE (`birth_date`), create `validate_profile_birth_date` and `profiles_validate_birth_date`, recreate `save_personal_information(text, date)`, and update `finish_onboarding`.
+- Update the integration tests, regenerate the types, and apply the migration to the project with the migration workflow.
+
+**Acceptance criteria:**
+- Dates of birth giving ages 16 and 100 today are accepted; 15 and 101 are rejected with `invalid_birth_date` through the function and with `23514` through a direct update.
+- Re-saving the same date does not re-evaluate it; inserts never evaluate it.
+- `finish_onboarding` requires `full_name` and `birth_date`.
+- The project's migration history matches, and the privilege catalog matches `database.md` §8.
 
 ---
 
@@ -560,22 +581,22 @@ Each task writes its pgTAP tests first. Each migration includes its RLS, policie
 
 **Objective:** Collect and persist the user's personal information (Page 1).
 
-**Dependencies:** TASK-008, TASK-013.
+**Dependencies:** TASK-008, TASK-013, TASK-021.
 
 **References:** `specification.md` SPEC-ONB-01 to SPEC-ONB-04, SPEC-ERR-01; `architecture.md` §8.
 
 **Activities:**
 - Build `/onboarding` as one route with two client-side steps, always starting at Page 1.
 - Load the saved profile and pre-populate the form.
-- Add full name and age inputs.
-- Validate: trimmed full name of 1–100 characters (counted in code points); age a whole number from 16 to 100.
+- Add full name and date of birth inputs (native date input).
+- Validate: trimmed full name of 1–100 characters (counted in code points); a date of birth giving an age of 16–100 years today.
 - Call `save_personal_information` when the user selects Next.
 - Implement the error-mapping module: database contract codes map to `errors.<code>` translation keys, anything else to `errors.generic`. The module returns keys, not text.
 
 **Acceptance criteria:**
 - Onboarding always starts at Page 1 with previously saved values, including after a refresh on Page 2.
 - Both fields are required.
-- Invalid names and ages cannot be saved.
+- Invalid names and dates of birth cannot be saved.
 - Information is persisted trimmed after selecting Next.
 - Contract errors show their mapped message; other errors show a generic message.
 - The user cannot proceed with invalid information.
@@ -583,7 +604,7 @@ Each task writes its pgTAP tests first. Each migration includes its RLS, policie
 **Tests:**
 - Empty name and whitespace-only name.
 - Name with 101 characters.
-- Empty age, non-integer age, age below 16, age above 100.
+- Empty date of birth; dates giving ages 15 and 101 are rejected; ages 16 and 100 are accepted (boundary dates computed from today).
 - Valid information, including surrounding whitespace that is trimmed.
 - Restore saved information after leaving and returning.
 - Error-mapping unit tests for every contract code.
@@ -733,10 +754,11 @@ Each task writes its pgTAP tests first. Each migration includes its RLS, policie
 | TASK-008 | save_personal_information | TASK-005 |
 | TASK-009 | finish_onboarding | TASK-006, TASK-007 |
 | TASK-010 | Database security, migration push and types | TASK-008, TASK-009 |
+| TASK-021 | Replace age with date of birth | TASK-010 |
 | TASK-011 | Registration and login | TASK-004, TASK-010, TASK-019 |
 | TASK-012 | Logout, session persistence and recovery | TASK-011 |
 | TASK-013 | Route protection and dashboard shell | TASK-012 |
-| TASK-014 | Personal information page | TASK-008, TASK-013 |
+| TASK-014 | Personal information page | TASK-008, TASK-013, TASK-021 |
 | TASK-015 | Business information page | TASK-009, TASK-014 |
 | TASK-016 | Dashboard | TASK-015 |
 | TASK-017 | End-to-end validation | TASK-016 |

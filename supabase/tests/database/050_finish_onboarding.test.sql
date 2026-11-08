@@ -14,9 +14,9 @@ select tests.create_user('ana@example.com', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa
 select tests.create_user('ben@example.com', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');
 select tests.create_user('cal@example.com', 'cccccccc-cccc-4ccc-8ccc-cccccccccccc');
 select tests.create_user('dan@example.com', 'dddddddd-dddd-4ddd-8ddd-dddddddddddd');
-update public.profiles set full_name = 'Ana', age = 30 where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
-update public.profiles set full_name = 'Ben', age = 40 where id = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
-update public.profiles set full_name = 'Dan', age = 50 where id = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
+update public.profiles set full_name = 'Ana', birth_date = '1996-01-01' where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+update public.profiles set full_name = 'Ben', birth_date = '1986-01-01' where id = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+update public.profiles set full_name = 'Dan', birth_date = '1976-01-01' where id = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
 insert into public.businesses (user_id, name, industry, status)
 values ('dddddddd-dddd-4ddd-8ddd-dddddddddddd', 'Dan Existing', 'retail', 'active');
 
@@ -103,7 +103,7 @@ select throws_ok($$select public.finish_onboarding('Another', 'retail', 'active'
   'a repeated call raises onboarding_already_completed');
 select throws_ok($$select public.finish_onboarding('Another', 'not_an_industry', 'active')$$, 'P0001', 'onboarding_already_completed',
   'profile state is checked before business content');
-select throws_ok($$select public.save_personal_information('Changed', 31)$$, 'P0001', 'onboarding_already_completed',
+select throws_ok($$select public.save_personal_information('Changed', '1990-01-01')$$, 'P0001', 'onboarding_already_completed',
   'personal information is locked after completion');
 
 select tests.authenticate_as('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');

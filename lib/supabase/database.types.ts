@@ -45,14 +45,14 @@ isOneToOne: true
                   ]
                 },"profiles": {
                   Row: {
-                    "age": number | null,"created_at": string,"full_name": string | null,"id": string,"onboarding_completed_at": string | null,"updated_at": string
+                    "birth_date": string | null,"created_at": string,"full_name": string | null,"id": string,"onboarding_completed_at": string | null,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "age"?: number | null,"created_at"?: string,"full_name"?: string | null,"id": string,"onboarding_completed_at"?: string | null,"updated_at"?: string
+                    "birth_date"?: string | null,"created_at"?: string,"full_name"?: string | null,"id": string,"onboarding_completed_at"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "age"?: number | null,"created_at"?: string,"full_name"?: string | null,"id"?: string,"onboarding_completed_at"?: string | null,"updated_at"?: string
+                    "birth_date"?: string | null,"created_at"?: string,"full_name"?: string | null,"id"?: string,"onboarding_completed_at"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -67,7 +67,7 @@ isOneToOne: true
 { Args: { "p_business_name": string,"p_industry": string,"p_status": string }; Returns: string
                            },
 "save_personal_information":
-{ Args: { "p_age": number,"p_full_name": string }; Returns: undefined
+{ Args: { "p_birth_date": string,"p_full_name": string }; Returns: undefined
                            }
           }
           Enums: {

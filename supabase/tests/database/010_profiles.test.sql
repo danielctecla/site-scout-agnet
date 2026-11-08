@@ -3,7 +3,7 @@
 begin;
 \ir ../helpers/setup.psql
 
-select plan(72);
+select plan(81);
 
 -- Fixtures: Ana and Ben, each with a profile. After TASK-006 the trigger
 -- creates the profiles; before it, the insert does.
@@ -18,14 +18,14 @@ on conflict (id) do nothing;
 -- ---------------------------------------------------------------------------
 select has_table('public', 'profiles', 'profiles exists');
 select columns_are('public', 'profiles',
-  array['id', 'full_name', 'age', 'onboarding_completed_at', 'created_at', 'updated_at'],
+  array['id', 'full_name', 'birth_date', 'onboarding_completed_at', 'created_at', 'updated_at'],
   'profiles has exactly the documented columns');
 select col_is_pk('public', 'profiles', 'id', 'id is the primary key');
 select col_type_is('public', 'profiles', 'full_name', 'text', 'full_name is text');
-select col_type_is('public', 'profiles', 'age', 'integer', 'age is integer');
+select col_type_is('public', 'profiles', 'birth_date', 'date', 'birth_date is date');
 select col_type_is('public', 'profiles', 'onboarding_completed_at', 'timestamp with time zone', 'onboarding_completed_at is timestamptz');
 select col_is_null('public', 'profiles', 'full_name', 'full_name is nullable');
-select col_is_null('public', 'profiles', 'age', 'age is nullable');
+select col_is_null('public', 'profiles', 'birth_date', 'birth_date is nullable');
 select col_is_null('public', 'profiles', 'onboarding_completed_at', 'onboarding_completed_at is nullable');
 select col_not_null('public', 'profiles', 'created_at', 'created_at is not null');
 select col_not_null('public', 'profiles', 'updated_at', 'updated_at is not null');
@@ -33,12 +33,12 @@ select fk_ok('public', 'profiles', 'id', 'auth', 'users', 'id', 'id references a
 
 select is(
   (select array_agg(conname::text order by conname) from pg_constraint where conrelid = 'public.profiles'::regclass),
-  array['profiles_age_check', 'profiles_completion_requires_personal_info', 'profiles_full_name_check', 'profiles_id_fkey', 'profiles_pkey'],
+  array['profiles_completion_requires_personal_info', 'profiles_full_name_check', 'profiles_id_fkey', 'profiles_pkey'],
   'profiles has exactly the documented named constraints'
 );
 
 select is(
-  (select array[full_name, age::text, onboarding_completed_at::text] from public.profiles where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
+  (select array[full_name, birth_date::text, onboarding_completed_at::text] from public.profiles where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
   array[null, null, null]::text[],
   'a new profile has no personal information and incomplete onboarding'
 );
@@ -71,12 +71,42 @@ select throws_ok($$update public.profiles set full_name = E'Ana\n' where id = 'a
   '23514', 'new row for relation "profiles" violates check constraint "profiles_full_name_check"',
   'a full name with a trailing newline is rejected');
 
-select lives_ok($$update public.profiles set age = 16 where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'$$, 'age 16 is accepted');
-select lives_ok($$update public.profiles set age = 100 where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'$$, 'age 100 is accepted');
-select throws_ok($$update public.profiles set age = 15 where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'$$,
-  '23514', 'new row for relation "profiles" violates check constraint "profiles_age_check"', 'age 15 is rejected');
-select throws_ok($$update public.profiles set age = 101 where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'$$,
-  '23514', 'new row for relation "profiles" violates check constraint "profiles_age_check"', 'age 101 is rejected');
+-- Date of birth: the trigger enforces an age of 16-100 on the day it is written (database.md §6.3).
+select trigger_is('public', 'profiles', 'profiles_validate_birth_date', 'public', 'validate_profile_birth_date',
+  'profiles_validate_birth_date calls validate_profile_birth_date');
+select is((select prosecdef from pg_proc where oid = 'public.validate_profile_birth_date()'::regprocedure), false,
+  'validate_profile_birth_date is SECURITY INVOKER');
+select is((select proconfig from pg_proc where oid = 'public.validate_profile_birth_date()'::regprocedure), array['search_path=""'],
+  'validate_profile_birth_date sets an empty search_path');
+select ok(not has_function_privilege('public', 'public.validate_profile_birth_date()', 'EXECUTE'), 'PUBLIC cannot execute validate_profile_birth_date');
+select ok(not has_function_privilege('anon', 'public.validate_profile_birth_date()', 'EXECUTE'), 'anon cannot execute validate_profile_birth_date');
+select ok(not has_function_privilege('authenticated', 'public.validate_profile_birth_date()', 'EXECUTE'),
+  'authenticated cannot execute validate_profile_birth_date');
+
+select lives_ok($$update public.profiles set birth_date = (current_date - interval '16 years')::date where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'$$,
+  'a date of birth giving age 16 today is accepted');
+select lives_ok($$update public.profiles set birth_date = (current_date - interval '101 years' + interval '1 day')::date where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'$$,
+  'a date of birth giving age 100 today is accepted');
+select throws_ok($$update public.profiles set birth_date = (current_date - interval '16 years' + interval '1 day')::date where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'$$,
+  '23514', 'birth_date must give an age between 16 and 100', 'a date of birth giving age 15 today is rejected');
+select throws_ok($$update public.profiles set birth_date = (current_date - interval '101 years')::date where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'$$,
+  '23514', 'birth_date must give an age between 16 and 100', 'a date of birth giving age 101 today is rejected');
+
+-- A stored date is not re-evaluated when it is not changed (it may age out over time).
+alter table public.profiles disable trigger profiles_validate_birth_date;
+update public.profiles set birth_date = '1900-01-01' where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+alter table public.profiles enable trigger profiles_validate_birth_date;
+select lives_ok($$update public.profiles set full_name = 'Ana' where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'$$,
+  'updating other columns does not re-evaluate the stored date of birth');
+select lives_ok($$update public.profiles set birth_date = '1900-01-01' where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'$$,
+  're-saving the same date of birth does not re-evaluate it');
+
+-- Inserts are never evaluated, so restoring a backup cannot fail on old dates.
+select tests.create_user('old@example.com', '99999999-9999-4999-8999-999999999999');
+delete from public.profiles where id = '99999999-9999-4999-8999-999999999999';
+select lives_ok($$insert into public.profiles (id, birth_date) values ('99999999-9999-4999-8999-999999999999', '1900-01-01')$$,
+  'an insert with any date of birth is not evaluated');
+update public.profiles set full_name = null, birth_date = null where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 
 -- Completion invariant
 select throws_ok($$update public.profiles set onboarding_completed_at = now() where id = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'$$,
@@ -84,14 +114,14 @@ select throws_ok($$update public.profiles set onboarding_completed_at = now() wh
   'onboarding cannot be completed without personal information');
 select throws_ok($$update public.profiles set full_name = 'Ben', onboarding_completed_at = now() where id = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'$$,
   '23514', 'new row for relation "profiles" violates check constraint "profiles_completion_requires_personal_info"',
-  'onboarding cannot be completed without an age');
-select lives_ok($$update public.profiles set full_name = 'Ana', age = 30, onboarding_completed_at = now() where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'$$,
+  'onboarding cannot be completed without a date of birth');
+select lives_ok($$update public.profiles set full_name = 'Ana', birth_date = '1990-05-14', onboarding_completed_at = now() where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'$$,
   'onboarding can be completed with personal information');
 select throws_ok($$update public.profiles set full_name = null where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'$$,
   '23514', 'new row for relation "profiles" violates check constraint "profiles_completion_requires_personal_info"',
   'personal information cannot be removed after completion');
 -- Reset Ana for the client tests below.
-update public.profiles set full_name = null, age = null, onboarding_completed_at = null
+update public.profiles set full_name = null, birth_date = null, onboarding_completed_at = null
 where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 
 -- ---------------------------------------------------------------------------
@@ -110,7 +140,7 @@ select policy_roles_are('public', 'profiles', 'profiles_update_own_before_comple
 select table_privs_are('public', 'profiles', 'anon', array[]::text[], 'anon has no table privileges');
 select table_privs_are('public', 'profiles', 'authenticated', array['SELECT'], 'authenticated has only SELECT at table level');
 select ok(has_column_privilege('authenticated', 'public.profiles', 'full_name', 'UPDATE'), 'authenticated can update full_name');
-select ok(has_column_privilege('authenticated', 'public.profiles', 'age', 'UPDATE'), 'authenticated can update age');
+select ok(has_column_privilege('authenticated', 'public.profiles', 'birth_date', 'UPDATE'), 'authenticated can update birth_date');
 select ok(not has_column_privilege('authenticated', 'public.profiles', 'id', 'UPDATE'), 'authenticated cannot update id');
 select ok(not has_column_privilege('authenticated', 'public.profiles', 'onboarding_completed_at', 'UPDATE'),
   'authenticated cannot update onboarding_completed_at');
@@ -147,10 +177,10 @@ select tests.authenticate_as('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');
 select results_eq('select id from public.profiles', array['aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid],
   'Ana sees only her own profile');
 
-select lives_ok($$update public.profiles set full_name = 'Ana', age = 30 where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'$$,
-  'Ana can update her own full_name and age before completion');
-select is((select array[full_name, age::text] from public.profiles where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
-  array['Ana', '30'], 'the direct update is stored');
+select lives_ok($$update public.profiles set full_name = 'Ana', birth_date = '1990-05-14' where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'$$,
+  'Ana can update her own full_name and birth_date before completion');
+select is((select array[full_name, birth_date::text] from public.profiles where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
+  array['Ana', '1990-05-14'], 'the direct update is stored');
 select is((select updated_at from public.profiles where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'), now(),
   'the trigger sets updated_at on a client update');
 
