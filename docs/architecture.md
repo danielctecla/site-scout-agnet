@@ -737,7 +737,7 @@ SCIAN prefixes decide whether an establishment is `same`, `related` or `other`. 
 
 ### Agent
 
-- `@anthropic-ai/claude-agent-sdk` `query()` with model `claude-sonnet-5-5`. Isolation options:
+- `@anthropic-ai/claude-agent-sdk` `query()` with model `claude-opus-5-5`. Isolation options:
   - `tools: []`;
   - `settingSources: []`, `mcpServers: {}`, `strictMcpConfig: true`;
   - `persistSession: false`;

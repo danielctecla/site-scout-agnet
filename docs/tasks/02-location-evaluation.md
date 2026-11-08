@@ -73,7 +73,7 @@ Alternative: let the agent pick free coordinates plus supporting DENUE IDs. It n
 
 Score = round(100 × Σ weight × value ÷ Σ weight of available factors). A factor without data shows as "not available" and its weight is left out. Same data and parameters → same score. Rent is shown but never scored.
 
-**D6 — AI provider (approved 2026-11-08: Claude Code, no API key).** `@anthropic-ai/claude-agent-sdk` runs Claude through the Claude Code login on the machine that runs `next dev`. Verified 2026-11-08: no API key used, structured output works, about 3 s per call. Server only, model `claude-sonnet-5-5`. The agent is isolated: no tools (`tools: []`), no settings, CLAUDE.md or MCP servers (`settingSources: []`, `strictMcpConfig`), an empty working directory and sessions not persisted. One structured-output call for the proposal; one call per chat message, with the stored evaluation as context. This works only because the app runs locally for its owner; it cannot serve other users with that login.
+**D6 — AI provider (approved 2026-11-08: Claude Code, no API key).** `@anthropic-ai/claude-agent-sdk` runs Claude through the Claude Code login on the machine that runs `next dev`. Verified 2026-11-08: no API key used, structured output works, about 3 s per call. Server only, model `claude-opus-5-5`. The agent is isolated: no tools (`tools: []`), no settings, CLAUDE.md or MCP servers (`settingSources: []`, `strictMcpConfig`), an empty working directory and sessions not persisted. One structured-output call for the proposal; one call per chat message, with the stored evaluation as context. This works only because the app runs locally for its owner; it cannot serve other users with that login.
 
 **D7 — Storage.** New table `location_evaluations` (`user_id`, input, result as `jsonb`, `created_at`) with RLS limited to the owner. It gives detail and comparison pages a URL and lets the chat load trusted context from the database. No history screen. Chat messages are not stored.
 
@@ -148,6 +148,8 @@ Score = round(100 × Σ weight × value ÷ Σ weight of available factors). A fa
 ### Phase 3 — Agent and pipeline
 
 #### TASK-028: Agent zone proposal
+
+**Status:** Done (2026-11-08). `agent.ts` (prompt, schema, validation, one retry) and `claude.ts` (Agent SDK, isolated). Smoke test with Claude Code: 14 s; the number check dropped a zone that quoted another zone's figure.
 
 **Dependencies:** TASK-026.
 

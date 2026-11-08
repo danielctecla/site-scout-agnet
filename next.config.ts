@@ -4,6 +4,8 @@ import createNextIntlPlugin from "next-intl/plugin";
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
+  // The Agent SDK starts its bundled Claude Code binary from its own folder.
+  serverExternalPackages: ["@anthropic-ai/claude-agent-sdk"],
   turbopack: {
     rules: {
       "*.css": {
