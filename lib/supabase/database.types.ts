@@ -43,6 +43,26 @@ isOneToOne: true
       referencedColumns: ["id"]
     }
                   ]
+                },"location_evaluations": {
+                  Row: {
+                    "created_at": string,"id": string,"input": NonNullable<Json>,"result": NonNullable<Json>,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"input": NonNullable<Json>,"result": NonNullable<Json>,"user_id"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"input"?: NonNullable<Json>,"result"?: NonNullable<Json>,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "location_evaluations_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"profiles": {
                   Row: {
                     "birth_date": string | null,"created_at": string,"full_name": string | null,"id": string,"onboarding_completed_at": string | null,"updated_at": string

@@ -35,7 +35,7 @@ select tests.clear_authentication();
 -- ---------------------------------------------------------------------------
 -- Privilege catalog
 -- ---------------------------------------------------------------------------
-select tables_are('public', array['businesses', 'profiles'], 'public contains only the application tables');
+select tables_are('public', array['businesses', 'location_evaluations', 'profiles'], 'public contains only the application tables');
 select functions_are('public',
   array['finish_onboarding', 'handle_new_user', 'handle_updated_at', 'save_personal_information', 'validate_profile_birth_date'],
   'public contains only the documented functions');
@@ -66,8 +66,8 @@ select results_eq($$
   where c.relnamespace = 'public'::regnamespace and c.relkind in ('r', 'p', 'v', 'm', 'f')
     and has_table_privilege('authenticated', c.oid, p.priv)
   order by 1, 2
-$$, $$values ('businesses', 'SELECT'), ('profiles', 'SELECT')$$,
-  'authenticated has only SELECT on the two tables');
+$$, $$values ('businesses', 'SELECT'), ('location_evaluations', 'SELECT'), ('profiles', 'SELECT')$$,
+  'authenticated has only SELECT on the application tables');
 select results_eq($$
   select c.relname::text collate "default", a.attname::text collate "default", p.priv
   from pg_class c
@@ -76,8 +76,9 @@ select results_eq($$
   where c.relnamespace = 'public'::regnamespace and c.relkind = 'r'
     and has_column_privilege('authenticated', c.oid, a.attnum, p.priv)
   order by 1, 2, 3
-$$, $$values ('profiles', 'birth_date', 'UPDATE'), ('profiles', 'full_name', 'UPDATE')$$,
-  'authenticated can write only profiles.full_name and profiles.birth_date');
+$$, $$values ('location_evaluations', 'input', 'INSERT'), ('location_evaluations', 'result', 'INSERT'),
+         ('profiles', 'birth_date', 'UPDATE'), ('profiles', 'full_name', 'UPDATE')$$,
+  'authenticated can write only profiles.full_name, profiles.birth_date and new evaluations');
 select results_eq($$
   select p.proname::text collate "default" from pg_proc p
   where p.pronamespace = 'public'::regnamespace and has_function_privilege('authenticated', p.oid, 'EXECUTE')

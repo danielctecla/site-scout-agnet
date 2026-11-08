@@ -649,7 +649,8 @@ constraint location_evaluations_result_check check (
 alter table public.location_evaluations enable row level security;
 
 revoke all on table public.location_evaluations from anon, authenticated;
-grant select, insert on table public.location_evaluations to authenticated;
+grant select on table public.location_evaluations to authenticated;
+grant insert (input, result) on table public.location_evaluations to authenticated;
 
 create policy location_evaluations_select_own on public.location_evaluations
   for select to authenticated
@@ -660,6 +661,7 @@ create policy location_evaluations_insert_own on public.location_evaluations
   with check (user_id = (select auth.uid()));
 ```
 
+- Only `input` and `result` are writable; `id`, `user_id` and `created_at` always come from their defaults.
 - UPDATE and DELETE: no privilege and no policy. Deleting the Auth user cascades through `profiles`.
 - No SECURITY DEFINER function is added.
 - Accepted: the server action inserts with the user's own session, so a user could insert a fabricated evaluation through the Data API. Only that user can read it, and only that user's chat uses it.

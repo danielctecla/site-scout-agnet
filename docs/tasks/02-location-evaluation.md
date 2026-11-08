@@ -137,6 +137,8 @@ Score = round(100 × Σ weight × value ÷ Σ weight of available factors). A fa
 
 #### TASK-027: `location_evaluations` table
 
+**Status:** Done locally (2026-11-08). Migration `20261108215505_create_location_evaluations.sql`, pgTAP `070`, `060` updated; only `input` and `result` are insertable. Pending: the user runs `db push`.
+
 **Dependencies:** TASK-023.
 
 **Scope:** migration with RLS (owner reads and inserts), pgTAP tests, regenerated types. The user applies it to the Supabase project with `db push`.
