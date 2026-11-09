@@ -19,9 +19,9 @@
     "Tipo": "Fijo",
     "Longitud": "-99.1617",
     "Latitud": "19.4194",
-    "tipo_corredor_industrial": "",
-    "nom_corredor_industrial": "",
-    "numero_local": ""
+    "CentroComercial": "",
+    "TipoCentroComercial": "",
+    "NumLocal": ""
   },
   {
     "CLEE": "09015462111000021000000000U2",
@@ -43,9 +43,9 @@
     "Tipo": "Fijo",
     "Longitud": "-99.1601",
     "Latitud": "19.4189",
-    "tipo_corredor_industrial": "",
-    "nom_corredor_industrial": "",
-    "numero_local": ""
+    "CentroComercial": "",
+    "TipoCentroComercial": "",
+    "NumLocal": ""
   },
   {
     "CLEE": "BAD",
@@ -67,9 +67,9 @@
     "Tipo": "Fijo",
     "Longitud": "-99.1625",
     "Latitud": "19.4201",
-    "tipo_corredor_industrial": "",
-    "nom_corredor_industrial": "",
-    "numero_local": ""
+    "CentroComercial": "",
+    "TipoCentroComercial": "",
+    "NumLocal": ""
   },
   {
     "CLEE": "09015811192000041000000000U9",
@@ -91,8 +91,8 @@
     "Tipo": "Fijo",
     "Longitud": "",
     "Latitud": "0",
-    "tipo_corredor_industrial": "",
-    "nom_corredor_industrial": "",
-    "numero_local": ""
+    "CentroComercial": "",
+    "TipoCentroComercial": "",
+    "NumLocal": ""
   }
 ]
