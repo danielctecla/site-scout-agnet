@@ -1,12 +1,32 @@
-# Python-generated files
-__pycache__/
-*.py[oc]
-build/
-dist/
-wheels/
-*.egg-info
+# ---------- General ----------
+.DS_Store
+*.log
+*.pem
+.idea/
+.vscode/
+.claude/settings.local.json
 
-# Virtual environments
-.venv
-
+# Environment variables / secrets (architecture.md §11)
+.env
+.env.*
 *.env
+!.env.example
+
+# Database dumps contain user data; keep them outside the repository.
+*.dump
+*.backup
+
+# ---------- Node / Next.js ----------
+node_modules/
+.next/
+out/
+build/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+
+# ---------- Testing ----------
+/test-results/
+/playwright-report/
+/playwright/.cache/

@@ -1,0 +1,299 @@
+{
+  "common": {
+    "appName": "Business Management",
+    "language": "Language",
+    "languages": {
+      "es": "Español",
+      "en": "English"
+    }
+  },
+  "metadata": {
+    "title": "Business Management",
+    "login": "Sign in",
+    "register": "Create account",
+    "onboarding": "Register your business",
+    "forgotPassword": "Reset password",
+    "updatePassword": "New password",
+    "dashboard": "Your business",
+    "evaluationNew": "Evaluate a location",
+    "evaluation": "Recommended zones",
+    "zone": "Zone detail",
+    "compare": "Zone comparison"
+  },
+  "auth": {
+    "fields": {
+      "email": "Email",
+      "password": "Password"
+    },
+    "login": {
+      "title": "Sign in",
+      "subtitle": "Sign in to continue with your business.",
+      "submit": "Continue",
+      "pending": "Signing in…",
+      "forgotPassword": "Forgot it?",
+      "noAccount": "Don't have an account?",
+      "register": "Create account"
+    },
+    "register": {
+      "title": "Create your account",
+      "subtitle": "Register your business, with or without a physical location.",
+      "submit": "Create account",
+      "pending": "Creating your account…",
+      "passwordHint": "At least 8 characters.",
+      "haveAccount": "Already have an account?",
+      "login": "Sign in"
+    },
+    "forgot": {
+      "title": "Reset your password",
+      "subtitle": "We'll send you a link to create a new one.",
+      "submit": "Send link",
+      "pending": "Sending…",
+      "sentTitle": "Check your email",
+      "sent": "If an account exists for {email}, we sent you a link to create a new password. Open it in this same browser; it expires in 1 hour.",
+      "backToLogin": "Back to sign in",
+      "linkExpired": "The link has expired. Request a new one.",
+      "linkInvalid": "The link isn't valid or was already used. Open it in the same browser where you requested it, or request a new one."
+    },
+    "update": {
+      "title": "Create a new password",
+      "subtitle": "You'll use it to sign in from now on.",
+      "label": "New password",
+      "hint": "At least 8 characters.",
+      "submit": "Save password",
+      "pending": "Saving…"
+    }
+  },
+  "onboarding": {
+    "progress": "Step {current} of {total}",
+    "progressName": "Registration progress",
+    "personal": {
+      "title": "Tell us about yourself",
+      "subtitle": "We'll use this for your profile. You can't change it after you finish.",
+      "fullName": "Full name",
+      "birthDate": "Date of birth",
+      "birthDateHint": "You must be between 16 and 100 years old.",
+      "next": "Next",
+      "saving": "Saving…"
+    },
+    "business": {
+      "title": "Your business",
+      "subtitle": "You don't need a physical location to register it.",
+      "name": "Business name",
+      "industry": "Industry",
+      "industryPlaceholder": "Select an industry",
+      "establishment": "Does your business already have a physical location?",
+      "yes": "Yes, I have one",
+      "yesHint": "It will be registered as active.",
+      "no": "Not yet",
+      "noHint": "It will be registered as planning.",
+      "back": "Back",
+      "finish": "Finish",
+      "finishing": "Finishing…"
+    }
+  },
+  "dashboard": {
+    "greeting": "Hi, {name}",
+    "subtitle": "This is your business.",
+    "industry": "Industry",
+    "signOut": "Sign out",
+    "signingOut": "Signing out…"
+  },
+  "validation": {
+    "emailRequired": "Enter your email.",
+    "emailInvalid": "Enter a valid email, like name@example.com.",
+    "passwordRequired": "Enter your password.",
+    "passwordTooShort": "Use at least 8 characters.",
+    "fullNameRequired": "Enter your full name.",
+    "fullNameTooLong": "Use at most 100 characters.",
+    "birthDateRequired": "Enter your date of birth.",
+    "birthDateOutOfRange": "You must be between 16 and 100 years old.",
+    "businessNameRequired": "Enter your business name.",
+    "businessNameTooLong": "Use at most 120 characters.",
+    "industryRequired": "Choose an industry.",
+    "establishmentRequired": "Choose an option."
+  },
+  "industries": {
+    "food_beverage": "Food & beverage",
+    "clothing_accessories": "Clothing & accessories",
+    "technology_electronics": "Technology & electronics",
+    "beauty_personal_care": "Beauty & personal care",
+    "health": "Health",
+    "education": "Education",
+    "professional_services": "Professional services",
+    "construction_maintenance": "Construction & maintenance",
+    "retail": "Retail",
+    "other": "Other"
+  },
+  "status": {
+    "planning": "Planning",
+    "active": "Active"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "not_authenticated": "Your session has ended. Please sign in again.",
+    "profile_not_found": "We couldn't find your profile. Sign out and sign in again.",
+    "onboarding_already_completed": "You've already registered your business.",
+    "personal_info_incomplete": "Complete your personal details first.",
+    "invalid_full_name": "Enter your full name, up to 100 characters.",
+    "invalid_birth_date": "You must be between 16 and 100 years old.",
+    "invalid_business_name": "Enter the business name, up to 120 characters.",
+    "invalid_industry": "Choose an industry from the list.",
+    "invalid_status": "Tell us whether your business already has a physical location.",
+    "business_already_exists": "You already have a registered business.",
+    "auth": {
+      "generic": "We couldn't complete that. Please try again.",
+      "invalid_credentials": "Incorrect email or password.",
+      "user_already_exists": "An account with this email already exists.",
+      "weak_password": "Use at least 8 characters.",
+      "same_password": "Your new password must be different from the old one."
+    }
+  },
+  "location": {
+    "entry": "Evaluate a location",
+    "entryHint": "Find zones for your business with INEGI DENUE data.",
+    "form": {
+      "back": "Back to home",
+      "title": "Evaluate a location",
+      "subtitle": "We suggest up to three nearby zones for your business, using INEGI DENUE data.",
+      "industry": "Your business industry",
+      "place": "Reference location",
+      "placeHint": "Address, neighborhood or place. Pick one of the results.",
+      "search": "Search",
+      "searching": "Searching…",
+      "results": "Search results",
+      "placeRequired": "Search for and pick a location.",
+      "radius": "Exploration radius",
+      "rent": "Monthly rent (optional)",
+      "rentHint": "In pesos. Shown as your own figure; it is not part of the score.",
+      "rentInvalid": "Enter a whole number from 1 to 10,000,000.",
+      "submit": "Evaluate location",
+      "submitting": "Analyzing…",
+      "duration": "It usually takes less than a minute.",
+      "retry": "Retry"
+    },
+    "errors": {
+      "place_not_found": "We couldn't find that place. Try another address or neighborhood.",
+      "geocoding_unavailable": "The address search is not responding. Try again.",
+      "denue_unavailable": "We couldn't reach INEGI DENUE. Try again.",
+      "insufficient_data": "Not enough data: DENUE has {establishments} establishments in the area and {candidates} zones with at least 10. Try another location or a larger radius.",
+      "analysis_failed": "The analysis could not be completed. Try again.",
+      "no_valid_zones": "No proposed zone passed validation against DENUE data. Try again or change the radius."
+    },
+    "results": {
+      "back": "New evaluation",
+      "title": "Recommended zones",
+      "context": "Near {place} · {radius} radius · {industry}",
+      "map": "Map of the recommended zones",
+      "reference": "Your reference",
+      "distance": "{distance} from your reference",
+      "score": "Opportunity",
+      "outOf": "/100",
+      "detail": "View detail",
+      "compare": "Compare",
+      "source": "Source: INEGI DENUE, queried on {date}. The DENUE API does not report when its data was last updated."
+    },
+    "zone": {
+      "fallbackName": "Zone {rank}"
+    },
+    "detail": {
+      "back": "Back to recommendations",
+      "viewEstablishments": "View establishments",
+      "compare": "Compare",
+      "ask": "Ask the agent",
+      "alternative": "Alternative {rank} of {total}",
+      "location": "{distance} from your reference · {lat}, {lon} · 300 m zone radius",
+      "scoreTitle": "Opportunity score",
+      "scoreHint": "Computed by the system; compares the zone with the average of the explored area.",
+      "points": "{points} of {max}",
+      "mapTitle": "Zone map",
+      "map": "Map of the zone's establishments",
+      "legendSame": "Same industry",
+      "legendOther": "Other establishments",
+      "legendRadius": "300 m radius",
+      "markerDistance": "{distance} from the center · DENUE ID {id}",
+      "whyTitle": "Why this zone",
+      "whyHint": "The agent's explanation, based only on this zone's DENUE data.",
+      "opportunities": "Opportunities",
+      "considerations": "Things to consider",
+      "conclusion": "Conclusion",
+      "establishmentsTitle": "Establishments found",
+      "name": "Name",
+      "activity": "Activity",
+      "category": "Type",
+      "distanceColumn": "Distance",
+      "showAll": "View all {count} establishments",
+      "sourceTitle": "Data source",
+      "sourceText": "INEGI DENUE. Queried on {date}. The API does not report when its data was last updated.",
+      "limitations": "A DENUE record does not guarantee that the establishment still operates. DENUE has no foot traffic, safety, transport, population or rent data.",
+      "rentTitle": "Monthly rent",
+      "rentEntered": "Entered by you. It is not estimated for the zones and is not part of the score.",
+      "rentMissing": "Not provided."
+    },
+    "category": {
+      "same": "Same industry",
+      "related": "Related",
+      "other": "Other"
+    },
+    "counts": {
+      "same": "Same industry",
+      "related": "Related",
+      "other": "Other"
+    },
+    "factors": {
+      "activity": {
+        "name": "Commercial activity",
+        "measures": "How many establishments there are.",
+        "data": "{count} in the zone: {ratio} times the area average.",
+        "limit": "A DENUE record does not guarantee the business is still open."
+      },
+      "competition": {
+        "name": "Direct competition",
+        "measures": "Businesses in your industry; fewer is better.",
+        "data": "{count} in the zone: {ratio} times the area average.",
+        "none": "{count} in the zone; none in the explored area.",
+        "limit": "Covers the whole industry, not only your business format."
+      },
+      "related": {
+        "name": "Related businesses",
+        "measures": "Businesses that complement your industry.",
+        "data": "{count} in the zone: {ratio} times the area average.",
+        "none": "{count} in the zone; none in the explored area.",
+        "limit": "Which activities count as related is defined by the system."
+      },
+      "staff": {
+        "name": "Staff size",
+        "measures": "People working in the zone.",
+        "data": "At least {count} people: {ratio} times the area average.",
+        "limit": "DENUE gives staff ranges; the lower bound of each range is used."
+      },
+      "unavailable": "Not available",
+      "unavailableIndustry": "Your industry has no SCIAN activities defined, so this factor is not computed.",
+      "unavailableStaff": "DENUE reports no staff data in this area."
+    },
+    "compare": {
+      "title": "Compare the zones",
+      "subtitle": "The same criteria for every zone. Factor points add up to the score.",
+      "criterion": "Criterion",
+      "score": "Score",
+      "total": "Establishments",
+      "distance": "Distance from your reference",
+      "cell": "{points} pts · {ratio}× · {count}",
+      "legend": "Each cell: points · times the area average · count in the zone. Source: INEGI DENUE."
+    },
+    "chat": {
+      "title": "Ask the agent",
+      "hint": "It answers only with this evaluation's data.",
+      "label": "Question",
+      "placeholder": "Ask about the analysis",
+      "send": "Send",
+      "thinking": "Thinking…",
+      "open": "Ask the agent",
+      "close": "Close",
+      "error": "The agent could not answer. Try again.",
+      "you": "You",
+      "agent": "Agent",
+      "suggestMissing": "What data is missing?",
+      "suggestCompetition": "Which zone has the least competition?"
+    }
+  }
+}

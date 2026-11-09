@@ -1,0 +1,4 @@
+#!/bin/sh
+# Blocks commits whose staged content contains Supabase secrets.
+# Installed by `npm install` (the "prepare" script sets core.hooksPath).
+exec node scripts/check-secrets.mjs --staged

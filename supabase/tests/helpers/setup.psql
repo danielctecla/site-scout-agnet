@@ -1,0 +1,78 @@
+-- Shared pgTAP setup. Every test file includes it right after `begin;`:
+--
+--   \ir ../helpers/setup.psql
+--
+-- Everything here is created inside the test's transaction and disappears on
+-- rollback, so test files are independent of each other and of run order.
+-- Tests run only against the local test stack (architecture.md §11).
+
+create extension if not exists pgtap with schema extensions;
+
+create schema tests;
+grant usage on schema tests to anon, authenticated;
+
+-- Creates an auth user the way sign-up does (an insert into auth.users, which
+-- fires the auth triggers) and returns its id. Pass p_id to use a fixed id.
+create function tests.create_user(p_email text, p_id uuid default null)
+returns uuid
+language plpgsql
+set search_path = ''
+as $$
+declare
+  v_id uuid := coalesce(p_id, gen_random_uuid());
+begin
+  insert into auth.users (
+    instance_id, id, aud, role, email, email_confirmed_at,
+    raw_app_meta_data, raw_user_meta_data, created_at, updated_at
+  ) values (
+    '00000000-0000-0000-0000-000000000000', v_id, 'authenticated', 'authenticated',
+    p_email, now(), '{"provider": "email", "providers": ["email"]}', '{}', now(), now()
+  );
+  return v_id;
+end;
+$$;
+
+-- Acts as the given user for the rest of the transaction, as the Data API
+-- does for a signed-in request: role `authenticated` plus JWT claims, so that
+-- auth.uid() returns p_user_id.
+create function tests.authenticate_as(p_user_id uuid)
+returns void
+language plpgsql
+set search_path = ''
+as $$
+begin
+  perform set_config(
+    'request.jwt.claims',
+    json_build_object('sub', p_user_id, 'role', 'authenticated', 'aud', 'authenticated')::text,
+    true
+  );
+  perform set_config('role', 'authenticated', true);
+end;
+$$;
+
+-- Acts as an unauthenticated client (role `anon`, no user) for the rest of
+-- the transaction.
+create function tests.authenticate_as_anon()
+returns void
+language plpgsql
+set search_path = ''
+as $$
+begin
+  perform set_config('request.jwt.claims', json_build_object('role', 'anon')::text, true);
+  perform set_config('role', 'anon', true);
+end;
+$$;
+
+-- Returns to the test runner's own role (postgres), with no JWT claims.
+create function tests.clear_authentication()
+returns void
+language plpgsql
+set search_path = ''
+as $$
+begin
+  perform set_config('request.jwt.claims', '', true);
+  perform set_config('role', 'postgres', true);
+end;
+$$;
+
+grant execute on all functions in schema tests to anon, authenticated;
