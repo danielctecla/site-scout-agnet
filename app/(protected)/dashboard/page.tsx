@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import Link from "next/link";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { PageIntro } from "@/components/ui/page-intro";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -60,6 +61,20 @@ export default async function DashboardPage() {
           </dl>
         </section>
       ) : null}
+      <section className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-divider bg-white p-6 sm:p-8">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-label font-medium">{t("location.entry")}</h2>
+          <p className="text-note text-ink-tertiary">
+            {t("location.entryHint")}
+          </p>
+        </div>
+        <Link
+          href="/evaluations/new"
+          className="inline-flex h-11 items-center rounded-lg bg-ink px-4 text-label font-medium text-white hover:bg-ink-hover focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-ink"
+        >
+          {t("location.entry")}
+        </Link>
+      </section>
     </DashboardLayout>
   );
 }

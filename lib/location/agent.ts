@@ -1,5 +1,11 @@
 import type { Industry } from "@/lib/industries";
-import { type Explanation, type FactorKey, LocationError } from "./types";
+import {
+  type EvaluationInput,
+  type EvaluationResult,
+  type Explanation,
+  type FactorKey,
+  LocationError,
+} from "./types";
 import { type Candidate, distanceM } from "./zones";
 
 // The agent's proposal: prompt, output schema and validation (architecture.md
@@ -184,4 +190,50 @@ export async function proposeZones(
     if (accepted) return accepted;
   }
   throw new LocationError("analysis_failed");
+}
+
+// Chat (SPEC-LOC-10): the stored evaluation is the only context.
+export function chatSystemPrompt(
+  input: EvaluationInput,
+  result: EvaluationResult,
+  locale: keyof typeof LANGUAGES,
+) {
+  const evaluation = {
+    reference: input.reference.label,
+    explorationRadiusM: input.radiusM,
+    zoneRadiusM: 300,
+    industry: input.industry,
+    rentMxn: input.rentMxn,
+    source: result.source,
+    queriedAt: result.queriedAt,
+    area: result.area,
+    scoring:
+      "Score 0-100 computed by the system: activity 30, competition 30, related businesses 25, staff 15. Each factor compares the zone's density with the area average; ratio 2 or more gives the full weight (inverted for competition). Unavailable factors are left out.",
+    zones: result.zones.map((z) => ({
+      rank: z.rank,
+      name: z.name,
+      distanceFromReferenceM: z.distanceM,
+      score: z.score,
+      factors: z.factors.map(({ key, available, ratio, points, weight }) => ({
+        key,
+        available,
+        ratio,
+        points,
+        weight,
+      })),
+      establishments: z.counts,
+      minimumStaff: z.staffMin,
+      explanation: z.explanation,
+    })),
+  };
+  return `You answer a small-business owner's questions about one location evaluation built from INEGI DENUE data.
+
+Rules:
+- Answer only from the evaluation below. If something is not in it, say it is not available.
+- Never invent establishments, figures or indicators, and never change or recompute scores.
+- DENUE has no foot traffic, safety, transport, demographics, purchasing power, rents or available properties, and a record does not guarantee that a business still operates.
+- Write in ${LANGUAGES[locale]}, plain text, at most about 120 words.
+
+Evaluation:
+${JSON.stringify(evaluation)}`;
 }

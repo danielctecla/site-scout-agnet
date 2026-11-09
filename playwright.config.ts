@@ -31,14 +31,21 @@ export default defineConfig({
     // Optional: a system Chromium when Playwright's own browser is missing.
     launchOptions: { executablePath: process.env.CHROMIUM_PATH },
   },
-  webServer: {
-    command: `npx next build && npx next start -p ${port}`,
-    url: `http://localhost:${port}/login`,
-    reuseExistingServer: false,
-    timeout: 300_000,
-    env: {
-      NEXT_PUBLIC_SUPABASE_URL: assertLocalSupabaseUrl(stack.API_URL),
-      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: stack.PUBLISHABLE_KEY,
+  webServer: [
+    // Local stand-ins for DENUE and Nominatim (tests/e2e/fake-services.mjs).
+    { command: "node tests/e2e/fake-services.mjs", port: 3199 },
+    {
+      command: `npx next build && npx next start -p ${port}`,
+      url: `http://localhost:${port}/login`,
+      reuseExistingServer: false,
+      timeout: 300_000,
+      env: {
+        NEXT_PUBLIC_SUPABASE_URL: assertLocalSupabaseUrl(stack.API_URL),
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: stack.PUBLISHABLE_KEY,
+        DENUE_API_URL: "http://localhost:3199/denue",
+        DENUE_TOKEN: "e2e",
+        NOMINATIM_URL: "http://localhost:3199/search",
+      },
     },
-  },
+  ],
 });

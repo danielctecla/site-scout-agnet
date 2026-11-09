@@ -533,6 +533,7 @@ Supabase's built-in email service delivers only to addresses that are members of
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://<project-ref>.supabase.co` | Browser; safe |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | The project's publishable key | Browser; safe, because access is controlled by RLS and privileges |
 | `DENUE_TOKEN` | INEGI DENUE API token | Server only; read by `lib/location/denue.ts` |
+| `DENUE_API_URL`, `NOMINATIM_URL` | Unset (real services) | Test only: `playwright.config.ts` points them to `tests/e2e/fake-services.mjs` |
 
 Rules:
 

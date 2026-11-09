@@ -14,7 +14,11 @@
     "onboarding": "Registra tu negocio",
     "forgotPassword": "Recuperar contraseña",
     "updatePassword": "Nueva contraseña",
-    "dashboard": "Tu negocio"
+    "dashboard": "Tu negocio",
+    "evaluationNew": "Evaluar ubicación",
+    "evaluation": "Zonas recomendadas",
+    "zone": "Detalle de zona",
+    "compare": "Comparación de zonas"
   },
   "auth": {
     "fields": {
@@ -142,6 +146,154 @@
       "user_already_exists": "Ya existe una cuenta con este correo.",
       "weak_password": "Usa al menos 8 caracteres.",
       "same_password": "La nueva contraseña debe ser distinta de la anterior."
+    }
+  },
+  "location": {
+    "entry": "Evaluar una ubicación",
+    "entryHint": "Encuentra zonas para tu negocio con datos de INEGI DENUE.",
+    "form": {
+      "back": "Volver al inicio",
+      "title": "Evalúa una ubicación",
+      "subtitle": "Te proponemos hasta tres zonas cercanas para tu negocio, con datos de INEGI DENUE.",
+      "industry": "Giro de tu negocio",
+      "place": "Ubicación de referencia",
+      "placeHint": "Dirección, colonia o lugar. Elige uno de los resultados.",
+      "search": "Buscar",
+      "searching": "Buscando…",
+      "results": "Resultados de la búsqueda",
+      "placeRequired": "Busca y elige una ubicación.",
+      "radius": "Radio de exploración",
+      "rent": "Renta mensual (opcional)",
+      "rentHint": "En pesos. Se muestra como dato tuyo; no entra en la puntuación.",
+      "rentInvalid": "Escribe un número entero entre 1 y 10,000,000.",
+      "submit": "Evaluar ubicación",
+      "submitting": "Analizando…",
+      "duration": "Suele tardar menos de un minuto.",
+      "retry": "Reintentar"
+    },
+    "errors": {
+      "place_not_found": "No encontramos ese lugar. Prueba con otra dirección o colonia.",
+      "geocoding_unavailable": "El buscador de direcciones no responde. Intenta de nuevo.",
+      "denue_unavailable": "No pudimos consultar INEGI DENUE. Intenta de nuevo.",
+      "insufficient_data": "No hay datos suficientes: DENUE tiene {establishments} establecimientos en el área y {candidates} zonas con al menos 10. Prueba con otra ubicación o un radio mayor.",
+      "analysis_failed": "No se pudo completar el análisis. Intenta de nuevo.",
+      "no_valid_zones": "Ninguna zona propuesta pasó la validación con los datos de DENUE. Intenta de nuevo o cambia el radio."
+    },
+    "results": {
+      "back": "Nueva evaluación",
+      "title": "Zonas recomendadas",
+      "context": "Cerca de {place} · radio de {radius} · {industry}",
+      "map": "Mapa de las zonas recomendadas",
+      "reference": "Tu referencia",
+      "distance": "A {distance} de tu referencia",
+      "score": "Oportunidad",
+      "outOf": "/100",
+      "detail": "Ver detalle",
+      "compare": "Comparar",
+      "source": "Fuente: INEGI DENUE, consultado el {date}. La API de DENUE no informa la fecha de actualización de sus datos."
+    },
+    "zone": {
+      "fallbackName": "Zona {rank}"
+    },
+    "detail": {
+      "back": "Volver a las recomendaciones",
+      "viewEstablishments": "Ver establecimientos",
+      "compare": "Comparar",
+      "ask": "Preguntar al agente",
+      "alternative": "Alternativa {rank} de {total}",
+      "location": "A {distance} de tu referencia · {lat}, {lon} · zona de 300 m de radio",
+      "scoreTitle": "Puntuación de oportunidad",
+      "scoreHint": "Calculada por el sistema; compara la zona con el promedio del área explorada.",
+      "points": "{points} de {max}",
+      "mapTitle": "Mapa de la zona",
+      "map": "Mapa de los establecimientos de la zona",
+      "legendSame": "Mismo giro",
+      "legendOther": "Otros establecimientos",
+      "legendRadius": "Radio de 300 m",
+      "markerDistance": "A {distance} del centro · ID DENUE {id}",
+      "whyTitle": "Por qué esta zona",
+      "whyHint": "Explicación del agente, basada solo en los datos de DENUE de esta zona.",
+      "opportunities": "Oportunidades identificadas",
+      "considerations": "Aspectos a considerar",
+      "conclusion": "Conclusión",
+      "establishmentsTitle": "Establecimientos identificados",
+      "name": "Nombre",
+      "activity": "Actividad",
+      "category": "Tipo",
+      "distanceColumn": "Distancia",
+      "showAll": "Ver los {count} establecimientos",
+      "sourceTitle": "Fuente de información",
+      "sourceText": "INEGI DENUE. Consultado el {date}. La API no informa la fecha de actualización de sus datos.",
+      "limitations": "Un registro en DENUE no garantiza que el establecimiento siga operando. DENUE no incluye flujo peatonal, seguridad, transporte, población ni rentas.",
+      "rentTitle": "Renta mensual",
+      "rentEntered": "Dato que ingresaste. No se estima para las zonas ni entra en la puntuación.",
+      "rentMissing": "No proporcionada."
+    },
+    "category": {
+      "same": "Mismo giro",
+      "related": "Relacionado",
+      "other": "Otro"
+    },
+    "counts": {
+      "same": "Mismo giro",
+      "related": "Relacionados",
+      "other": "Otros"
+    },
+    "factors": {
+      "activity": {
+        "name": "Actividad comercial",
+        "measures": "Cuántos establecimientos hay.",
+        "data": "{count} en la zona: {ratio} veces el promedio del área.",
+        "limit": "Un registro en DENUE no garantiza que el negocio siga abierto."
+      },
+      "competition": {
+        "name": "Competencia directa",
+        "measures": "Negocios de tu mismo giro; menos es mejor.",
+        "data": "{count} en la zona: {ratio} veces el promedio del área.",
+        "none": "{count} en la zona; no hay en el área explorada.",
+        "limit": "Incluye todo el giro, no solo tu formato de negocio."
+      },
+      "related": {
+        "name": "Negocios relacionados",
+        "measures": "Negocios que complementan tu giro.",
+        "data": "{count} en la zona: {ratio} veces el promedio del área.",
+        "none": "{count} en la zona; no hay en el área explorada.",
+        "limit": "Qué actividades cuentan como relacionadas es una definición del sistema."
+      },
+      "staff": {
+        "name": "Personal ocupado",
+        "measures": "Personas que trabajan en la zona.",
+        "data": "Al menos {count} personas: {ratio} veces el promedio del área.",
+        "limit": "DENUE da rangos de personal; se usa el mínimo de cada rango."
+      },
+      "unavailable": "No disponible",
+      "unavailableIndustry": "Tu giro no tiene actividades SCIAN definidas, así que este factor no se calcula.",
+      "unavailableStaff": "DENUE no informa el personal ocupado en esta área."
+    },
+    "compare": {
+      "title": "Compara las zonas",
+      "subtitle": "Mismos criterios para todas. Los puntos de cada factor suman la puntuación.",
+      "criterion": "Criterio",
+      "score": "Puntuación",
+      "total": "Establecimientos",
+      "distance": "Distancia a tu referencia",
+      "cell": "{points} pts · {ratio}× · {count}",
+      "legend": "Cada celda: puntos · veces el promedio del área · cantidad en la zona. Fuente: INEGI DENUE."
+    },
+    "chat": {
+      "title": "Pregunta al agente",
+      "hint": "Responde solo con los datos de esta evaluación.",
+      "label": "Pregunta",
+      "placeholder": "Pregunta sobre el análisis",
+      "send": "Enviar",
+      "thinking": "Pensando…",
+      "open": "Preguntar al agente",
+      "close": "Cerrar",
+      "error": "El agente no pudo responder. Intenta de nuevo.",
+      "you": "Tú",
+      "agent": "Agente",
+      "suggestMissing": "¿Qué datos faltan?",
+      "suggestCompetition": "¿Qué zona tiene menos competencia?"
     }
   }
 }

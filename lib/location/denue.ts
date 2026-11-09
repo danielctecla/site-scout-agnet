@@ -3,7 +3,10 @@ import { type DenueEstablishment, LocationError } from "./types";
 // INEGI DENUE `Buscar` client (architecture.md §15). Server only: it reads the
 // DENUE token.
 
-const BASE_URL = "https://www.inegi.org.mx/app/api/denue/v1/consulta";
+// DENUE_API_URL exists only so the end-to-end test can use a local fake.
+const BASE_URL =
+  process.env.DENUE_API_URL ??
+  "https://www.inegi.org.mx/app/api/denue/v1/consulta";
 const TIMEOUT_MS = 30_000;
 
 type Point = { lat: number; lon: number; radiusM: number };

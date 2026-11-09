@@ -173,11 +173,15 @@ Each UI task starts with a short design proposal for approval (UX direction).
 
 #### TASK-030: Evaluation form
 
+**Status:** Done (2026-11-08). `/evaluations/new`, dashboard entry, Nominatim search (`geocode.ts`); errors keep the form and the button becomes Retry.
+
 **Dependencies:** TASK-029.
 
 **Scope:** dashboard entry point; address search with result list (D1); radius (default 1 km); optional rent; the industry comes from onboarding. Errors: address not found, DENUE failure, analysis failure with retry.
 
 #### TASK-031: Results screen
+
+**Status:** Done (2026-11-08). `/evaluations/[id]` with the Leaflet map (`zone-map.tsx`), ranked zones and source.
 
 **Dependencies:** TASK-030.
 
@@ -185,17 +189,23 @@ Each UI task starts with a short design proposal for approval (UX direction).
 
 #### TASK-032: Zone detail
 
+**Status:** Done (2026-11-08). `/evaluations/[id]/zones/[rank]`, sections 1–8; the establishment list opens with `<details>`.
+
 **Dependencies:** TASK-031.
 
 **Scope:** sections A–I of the brief: identification, score, factor breakdown, map with nearby establishments (same industry vs other) and marker details, agent explanation, establishment summary and list, source and limitations, rent as entered or "not provided", back / compare / ask agent / view establishments.
 
 #### TASK-033: Comparison
 
+**Status:** Done (2026-11-08). `/evaluations/[id]/compare`.
+
 **Dependencies:** TASK-031.
 
 **Scope:** table of the evaluation's zones with score, factor breakdown, activity, competition, related businesses and staff size. No charts.
 
 #### TASK-034: Agent chat
+
+**Status:** Done (2026-11-08). `chat-panel.tsx` and `askAgent`; the context is the evaluation read through RLS. Isolation is covered by SPEC-LOC-11 (`loadEvaluation` + pgTAP 070), so no extra test.
 
 **Dependencies:** TASK-031.
 
@@ -206,6 +216,8 @@ Each UI task starts with a short design proposal for approval (UX direction).
 ### Phase 5 — Validation
 
 #### TASK-035: End-to-end validation
+
+**Status:** In progress. `tests/e2e/location.spec.ts` passes (27 s): insufficient data, retry, results, detail, comparison and chat, with DENUE and Nominatim faked locally and real Claude Code. Pending: manual smoke test with real DENUE (needs a valid token) and `db push`.
 
 **Dependencies:** TASK-032, TASK-033, TASK-034.
 
