@@ -687,7 +687,7 @@ DENUE contact fields (phone, email, website) are discarded at parsing and never 
 
 - Request: `GET https://www.inegi.org.mx/app/api/denue/v1/consulta/Buscar/todos/{lat},{lon}/{radiusM + 300}/{DENUE_TOKEN}`, timeout 30 s, no caching between evaluations.
 - Parsing:
-  - SCIAN class = characters 6–11 of `CLEE`, as the three documented samples show (`01001722514004531` → 722514).
+  - SCIAN class = characters 6–11 of `CLEE` (28 characters in real responses), as the documented samples and a real response show.
   - `staffMin` = the lower bound of `Estrato`.
   - Records with invalid coordinates are skipped.
 - Errors: network failure, timeout, non-JSON body or "No autorizado" → `denue_unavailable`.

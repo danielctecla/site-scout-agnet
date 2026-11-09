@@ -105,7 +105,7 @@ Score = round(100 × Σ weight × value ÷ Σ weight of available factors). A fa
 
 #### TASK-024: DENUE client
 
-**Status:** In progress. Client and parser done (`lib/location/denue.ts`), tested with a fixture in the documented format. The `CLEE` SCIAN position is confirmed by the API documentation's samples. Pending: a valid token (two were rejected on every method), then a real response as the fixture and the response size in a dense area.
+**Status:** In progress. Client and parser done (`lib/location/denue.ts`), tested with a fixture in the documented format. Verified with a real response (2026-11-08): 28-character `CLEE` with the SCIAN class in characters 6–11, `Estrato` values as parsed. Roma Norte, CDMX: 1.3 km = 9,093 establishments, 6.4 MB, 2–9 s; 3.3 km = 54,572, 38.7 MB, 41 s. Real pipeline at 1 km: 30 s (Claude 28 s), stored result 530 KB.
 
 **Dependencies:** TASK-023. Needs a DENUE token.
 
