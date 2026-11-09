@@ -33,6 +33,17 @@ describe("parseEstablishments", () => {
     expect(JSON.stringify(parsed)).not.toMatch(/55 1234|@|www\./);
   });
 
+  it("does not repeat the road type already in the street name", () => {
+    const [e] = parseEstablishments([
+      {
+        ...fixture[0],
+        Tipo_vialidad: "AVENIDA",
+        Calle: "AVENIDA DE LAS NACIONES",
+      },
+    ]);
+    expect(e.street).toBe("AVENIDA DE LAS NACIONES");
+  });
+
   it("leaves the SCIAN class empty when the CLEE is malformed", () => {
     expect(parsed[2].scian).toBeNull();
   });

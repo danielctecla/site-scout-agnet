@@ -60,7 +60,8 @@ export async function askForProposal(prompt: string): Promise<unknown> {
         schema: PROPOSAL_SCHEMA as unknown as Record<string, unknown>,
       },
     },
-    60_000,
+    // A 3 km radius in a dense city sends about 300 candidates.
+    120_000,
   );
   return result.structured_output;
 }

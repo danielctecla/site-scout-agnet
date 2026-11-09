@@ -685,7 +685,7 @@ DENUE contact fields (phone, email, website) are discarded at parsing and never 
 
 ### DENUE
 
-- Request: `GET https://www.inegi.org.mx/app/api/denue/v1/consulta/Buscar/todos/{lat},{lon}/{radiusM + 300}/{DENUE_TOKEN}`, timeout 30 s, no caching between evaluations.
+- Request: `GET https://www.inegi.org.mx/app/api/denue/v1/consulta/Buscar/todos/{lat},{lon}/{radiusM + 300}/{DENUE_TOKEN}`, timeout 90 s, no caching between evaluations. Measured in Roma Norte, CDMX: 1.3 km ≈ 9,000 establishments (6 MB); 3.3 km ≈ 55,000 (39 MB, about 40 s).
 - Parsing:
   - SCIAN class = characters 6–11 of `CLEE` (28 characters in real responses), as the documented samples and a real response show.
   - `staffMin` = the lower bound of `Estrato`.
@@ -753,7 +753,7 @@ SCIAN prefixes decide whether an establishment is `same`, `related` or `other`. 
 - Chat:
   - The system prompt holds the evaluation summary: input, area counts, and each zone's factors, counts, top activities and explanation.
   - The last 10 messages are sent as the conversation. Plain-text answer.
-- Timeouts: proposal 60 s, chat 45 s.
+- Timeouts: proposal 120 s, chat 45 s. A 3 km radius in a dense city can take more than one minute in total (accepted 2026-11-08).
 
 ### Errors
 

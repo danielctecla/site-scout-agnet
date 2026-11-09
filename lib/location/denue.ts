@@ -7,7 +7,8 @@ import { type DenueEstablishment, LocationError } from "./types";
 const BASE_URL =
   process.env.DENUE_API_URL ??
   "https://www.inegi.org.mx/app/api/denue/v1/consulta";
-const TIMEOUT_MS = 30_000;
+// A 3.3 km query in a dense city returns about 40 MB in about 40 s.
+const TIMEOUT_MS = 90_000;
 
 type Point = { lat: number; lon: number; radiusM: number };
 type Deps = { token?: string; fetch?: typeof fetch };
@@ -60,9 +61,12 @@ export function parseEstablishments(records: unknown[]): DenueEstablishment[] {
     const scian = text(r.CLEE).slice(5, 11);
     const estrato = text(r.Estrato);
     const lowerBound = /^(\d+)\s/.exec(estrato)?.[1];
-    const street = [text(r.Tipo_vialidad), text(r.Calle)]
-      .filter(Boolean)
-      .join(" ");
+    // DENUE sometimes repeats the road type in the name ("AVENIDA" +
+    // "AVENIDA DE LAS NACIONES").
+    const type = text(r.Tipo_vialidad);
+    const name = text(r.Calle);
+    const street =
+      !type || name.startsWith(`${type} `) ? name : `${type} ${name}`.trim();
     const number = text(r.Num_Exterior);
     const colonia = text(r.Colonia);
     const address = [
