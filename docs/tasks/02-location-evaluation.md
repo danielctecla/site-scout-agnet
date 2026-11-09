@@ -105,7 +105,7 @@ Score = round(100 × Σ weight × value ÷ Σ weight of available factors). A fa
 
 #### TASK-024: DENUE client
 
-**Status:** In progress. Client and parser done (`lib/location/denue.ts`), tested with a fixture in the documented format. Pending: a valid token, then replace the fixture with a real response and confirm the `CLEE` SCIAN position and the response size in a dense area.
+**Status:** In progress. Client and parser done (`lib/location/denue.ts`), tested with a fixture in the documented format. The `CLEE` SCIAN position is confirmed by the API documentation's samples. Pending: a valid token (two were rejected on every method), then a real response as the fixture and the response size in a dense area.
 
 **Dependencies:** TASK-023. Needs a DENUE token.
 
